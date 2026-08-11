@@ -28,7 +28,7 @@ The table below is a proposed split. Confirm it at kickoff and edit as needed. E
 
 | Area | Owner | What it covers |
 |------|-------|----------------|
-| Product and requirements | @spdooley5949 | Competitor list, matrix format, who uses the output |
+| Build, all three stages | @spdooley5949 | Collect, Classify, and Assemble: the full pipeline that pulls the ads and produces the matrix |
 | Ad collection pipeline | @andrewsilver314-ship-it | Stage 1, pulling ads from the libraries and keeping it running |
 | Matrix logic and data | @catherinemchambers-coder | Stage 3, the data structure and building and exporting the matrix |
 | Message classification | @jessfriedbergsmith-creator | Stage 2, the theme taxonomy and what counts as each angle |
