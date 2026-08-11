@@ -8,3 +8,6 @@ __pycache__/
 
 # Mac
 .DS_Store
+
+# Excel lock files (created while a workbook is open)
+~$*.xlsx
