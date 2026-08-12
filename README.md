@@ -1,55 +1,197 @@
-# Creative-Teardown-Marketing
+# Creative Teardown
 
-Pulls the ads a set of competitors are running right now and turns them into a messaging matrix. The matrix is one grid that shows which angles each competitor is pushing, so we can see the open space and decide where to position.
+Reads a sheet of competitor ads, classifies every one of them, and produces a
+messaging matrix that shows what an entire category is claiming, who it is
+talking to, what it offers as evidence, and which territory nobody has taken.
+
+Built for a competitive teardown of fitness apparel. The category is a
+configuration choice, not a hard-coded assumption; the tool works on any set of
+brands whose ads you can collect.
 
 ## Why this exists
 
-Competitors tell you their strategy through the ads they pay to run. Those ads are public but scattered across ad libraries, and reading them one at a time tells you almost nothing. This tool gathers them in one place and structures them, so a marketing lead can look at a single page and answer three questions: what is each competitor claiming, which themes are crowded, and where is nobody playing.
+Competitors publish their strategy every day in the ads they pay to run. That
+signal is public, but it sits scattered across ad libraries in a form nobody
+reads as a whole. Teams end up arguing about positioning from memory and
+anecdote.
+
+Reading fifty ads one at a time tells you almost nothing. Reading fifty ads as a
+grid tells you where the category has converged, which is exactly where paid
+media gets expensive and differentiation disappears. The empty columns are worth
+more than the full ones.
 
 ## What it produces
 
-A messaging matrix. Rows are competitors. Columns are message themes such as price, speed, trust and safety, ease of use, and ROI. Each cell shows how hard a competitor leans on that theme, with the example ad copy behind it. The output ships as a spreadsheet first and a shared dashboard later.
+A five-sheet Excel workbook at `output/messaging_matrix.xlsx`.
+
+| Sheet | What it holds |
+|---|---|
+| **Findings** | The strategic read in plain English: headline, the whitespace and what to do about it, each brand's positioning and signature proof, the proof points the category leans on, and ranked recommendations. This is the sheet you present. |
+| **Messaging Matrix** | Brands down the side, claim themes across the top. Each cell is the percent of that brand's ads using that theme. |
+| **Audience Matrix** | Same layout, for who each brand addresses. |
+| **Proof Points** | The specific evidence each brand cites: ratings, review counts, guarantees, shipping and return terms, discounts. |
+| **Tagged Ads** | Every ad with its type, themes, audiences and proof points. The receipts sheet. Any number in the matrices traces back to specific rows here. |
 
 ## How it works
 
-Three stages:
+**1. Collect.** Ads are gathered by hand from the Google Ads Transparency
+Center, which is public and needs no login, into `data/ads.csv`. Four columns,
+spelled exactly: `competitor`, `ad_text`, `format`, `first_seen`. One row per ad.
+Collection is deliberately manual — the tool does not scrape.
 
-1. Collect. Pull the active ads for a named list of competitors from public ad libraries such as the Meta Ad Library and the Google Ads Transparency Center, with more sources added over time.
-2. Classify. Tag each ad by message theme and offer. This is where raw creative becomes structured data.
-3. Assemble. Roll the tagged ads into the matrix and export it.
+**2. Tag.** Claude Haiku reads each ad and returns its themes, its audiences,
+its ad type and any concrete proof points it cites. Tags are written to
+`data/tags.json` and reused on later runs (see Reproducibility below).
 
-## Status
+**3. Assemble.** Counts are rolled into the matrices, Claude Opus reads the
+finished matrix and writes the strategic findings, and the workbook is written
+out with live Excel formulas in the category row.
 
-Early. The repo holds this README and nothing else yet. The first milestone is a working Collect stage for two competitors and two ad sources. Current tasks live in Issues.
+## Three design decisions that matter
 
-## Team and ownership
+**Reproducibility.** Language models do not return identical output for identical
+input. Two consecutive runs over the same 42 ads once moved 14 tag assignments
+and rewrote the headline finding, with one theme swinging between 1, 2 and 3 ads.
+Tags are now frozen to `data/tags.json`, keyed by a hash of the ad, and reused on
+every later run. The numbers hold still between runs, rebuilding costs no tagging
+calls, and a reviewer's correction to a tag survives the next rebuild. Run with
+`--retag` to score everything from scratch.
 
-The table below is a proposed split. Confirm it at kickoff and edit as needed. Everyone listed already has write access to the repo.
+**Normalized cells.** Matrix cells are the percent of each brand's ads, not raw
+counts, with the denominator shown in the `Ads` column. Brands are sampled at
+different depths — 18 ads for one, 3 for another — and raw counts would rank
+brands by how much of them happened to be collected rather than by what they
+actually say.
 
-| Area | Owner | What it covers |
-|------|-------|----------------|
-| Build, all three stages | @spdooley5949 | Collect, Classify, and Assemble: the full pipeline that pulls the ads and produces the matrix |
-| Ad collection pipeline | @andrewsilver314-ship-it | Stage 1, pulling ads from the libraries and keeping it running |
-| Matrix logic and data | @catherinemchambers-coder | Stage 3, the data structure and building and exporting the matrix |
-| Message classification | @jessfriedbergsmith-creator | Stage 2, the theme taxonomy and what counts as each angle |
-| Data quality and testing | @JesseJ0k3s | Checking that pulled ads are real, current, and complete |
-| Output and presentation | @williammlevine-917 | The deliverable, its format, the dashboard, and how it is shared |
+**Ad-type classification.** Search results are dominated by product-feed and
+discount ads that say nothing about positioning. Every ad is classified as
+**Brand**, **Product** or **Promotional**. In the current dataset only 16 of 101
+ads are brand-level, against 62 product and 23 promotional. Running with
+`--brand-only` rebuilds the analysis on brand-level copy alone.
 
-## First milestones
+## What it can do
 
-1. Agree the competitor list and the exact matrix columns.
-2. Pull the active ads for two competitors from one ad source.
-3. Define the message themes and tag 20 sample ads by hand.
-4. Build the first matrix from that sample and export it as a spreadsheet.
+- Classify any ad against a configurable set of eight claim themes and eight audiences
+- Assign multiple themes and multiple audiences per ad
+- Extract concrete proof points as free text, so evidence is comparable across brands
+- Flag whitespace automatically: themes and audiences no competitor is using
+- Produce reproducible output that does not drift between runs
+- Accept human corrections that persist permanently
+- Reconcile every matrix figure against the underlying tagged data
+- Rebuild in seconds once tags are frozen, at no model cost for tagging
 
-## How to contribute
+## Configuring it for another category
 
-1. Create a branch for your work. Do not commit straight to main.
-2. Open a pull request when the work is ready.
-3. Ask one teammate to review before you merge.
+Edit two lists at the top of `src/build_matrix.py`. They become the matrix
+columns.
 
-This keeps main clean and gives everyone a chance to catch problems early.
+```python
+THEMES = [...]      # the claim types you want to track
+AUDIENCES = [...]   # the segments you want to track
+```
+
+Change these and delete `data/tags.json`, or run `--retag`, so every ad is
+rescored against the new definitions. Leaving stale tags in place while changing
+the lists will produce a matrix that silently disagrees with itself.
 
 ## Setup
 
-To be written once the Collect stage exists. It will list the accounts and API keys each ad source needs, and how to run the tool.
+```bash
+python3 -m venv venv
+venv/bin/pip install -r requirements.txt
+```
+
+Create a `.env` file in the project root with one line:
+
+```
+ANTHROPIC_API_KEY=your-key-here
+```
+
+`.env` is gitignored and must never be committed. Verify the key with
+`venv/bin/python check_key.py`. Get a key at console.anthropic.com.
+
+## Running it
+
+```bash
+venv/bin/python src/build_matrix.py data/ads.csv
+```
+
+| Flag | Effect |
+|---|---|
+| `--retag` | Ignore saved tags and rescore every ad. Use after changing themes or audiences. |
+| `--brand-only` | Build the matrices from brand-level ads only, excluding product and promotional. |
+
+Output lands at `output/messaging_matrix.xlsx`. GitHub cannot preview Excel in
+the browser, so download the file rather than expecting the page to render.
+
+## Current dataset
+
+101 ads across 12 fitness apparel brands, collected 12 August 2026.
+
+| Brand | Ads | | Brand | Ads |
+|---|---|---|---|---|
+| lululemon | 18 | | Nike | 8 |
+| On | 12 | | Under Armour | 7 |
+| Arc'teryx | 12 | | Tracksmith | 4 |
+| Vuori | 10 | | New Balance | 4 |
+| Gymshark | 10 | | Fabletics | 4 |
+| Alo Yoga | 9 | | Patagonia | 3 |
+
+Headline result: performance appears in 59% of ads and comfort in 58%, with
+versatility at 53% — the three claims are near-interchangeable across all twelve
+brands. Community and belonging appears in 5%, five ads across three brands, and
+is the emptiest column in the set. 61% of ads make a claim with no evidence
+attached.
+
+## Limitations
+
+These are real and should be stated whenever the output is presented.
+
+**Source.** Google Ads Transparency Center only. No Meta, TikTok, LinkedIn, or
+organic search.
+
+**Format.** Text ads only. Most spend in this category goes to video and image
+creative, which carries no copy to analyze. This is a teardown of *search
+messaging*, not of brand strategy as a whole.
+
+**Sample depth.** Uneven by design, from 18 ads down to 3. Patagonia, Tracksmith,
+New Balance and Fabletics are thin because they genuinely run few search text
+ads, which has been confirmed rather than assumed. Percentages keep the
+comparison valid, but a three-ad brand still carries a wide error bar. Say "of
+the ads we sampled."
+
+**Dates.** The `first_seen` column holds the collection date, not the true
+first-seen date, which would require opening each ad individually. Do not cite
+it.
+
+**Tagging.** No human has audited the tags. The tagger is a language model making
+judgment calls. The arithmetic reconciles exactly; that is a different claim from
+the tags being correct. `data/tags.json` is editable, and corrections there are
+permanent.
+
+**A correction worth recording.** An earlier version of this analysis, built on
+42 ads, concluded that three brands cited no proof at all. That was false, and it
+was a sampling artifact: the Transparency Center shows roughly four ads per
+advertiser until you click "See all ads," and those four skew toward product
+listings, which do not carry ratings. Collecting the full lists showed all twelve
+brands cite proof. Read past the first screen of any source.
+
+## Repo layout
+
+```
+data/ads.csv        input: one row per ad, four columns
+data/tags.json      frozen tags, committed, hand-editable
+src/build_matrix.py the tool
+output/             generated workbook
+docs/PRD.md         product requirements
+check_key.py        API key check
+```
+
+## Contributing
+
+`main` is protected. Changes arrive by pull request; direct pushes and force
+pushes are blocked, and the branch cannot be deleted.
+
+If you are collecting ads and do not use git, you do not need to. Attach your CSV
+to a comment on your issue, or use **Add file → Upload files** in the browser and
+open a pull request from there.
