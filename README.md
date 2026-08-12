@@ -136,11 +136,25 @@ different methods, and the difference matters when citing either one.
 101 ads, 12 brands, collected 12 August 2026 by Shane Dooley.
 
 Gathered by hand from the Google Ads Transparency Center: search each advertiser,
-click "See all ads," read the live text ads, transcribe them. No automation, no
-scraping, no OCR. Every ad was read by a person before it entered the file.
+click "See all ads," read the text ads listed there, transcribe them. No
+automation, no scraping, no OCR. Every ad was read by a person before it entered
+the file.
 
-Current-state snapshot only. `first_seen` holds the collection date, not the true
-first-seen date. This is the dataset behind the headline finding.
+**What "as of 12 August 2026" does and does not mean.** The only filters applied
+were US region, text format, and advertiser domain. The Transparency Center's
+date filter was left on "Any time," and individual ads were not opened to check
+their run dates. So this is *every text ad the Transparency Center listed for
+these advertisers on that date* — not a verified set of ads running at that
+moment. Some may have stopped running.
+
+Describe it as "ads listed in the Transparency Center as of 12 August 2026,"
+not as "live" or "currently running." The distinction does not affect any
+finding, since theme distribution across the ads a brand has run is still a valid
+read of that brand's messaging, but it is the accurate characterisation of the
+sample.
+
+`first_seen` holds the collection date, not the true first-seen date. This is the
+dataset behind the headline finding.
 
 ### Historical — `data/competitor_ads_5yr_v2.csv`
 
