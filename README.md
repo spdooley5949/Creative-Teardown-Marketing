@@ -37,7 +37,9 @@ A five-sheet Excel workbook at `output/messaging_matrix.xlsx`.
 **1. Collect.** Ads are gathered by hand from the Google Ads Transparency
 Center, which is public and needs no login, into `data/ads.csv`. Four columns,
 spelled exactly: `competitor`, `ad_text`, `format`, `first_seen`. One row per ad.
-Collection is deliberately manual — the tool does not scrape.
+For the primary dataset, collection is deliberately manual — the tool itself does
+not scrape. A second, larger historical dataset was contributed separately and
+gathered a different way. See **Datasets and how each was collected** below.
 
 **2. Tag.** Claude Haiku reads each ad and returns its themes, its audiences,
 its ad type and any concrete proof points it cites. Tags are written to
@@ -124,6 +126,57 @@ venv/bin/python src/build_matrix.py data/ads.csv
 Output lands at `output/messaging_matrix.xlsx`. GitHub cannot preview Excel in
 the browser, so download the file rather than expecting the page to render.
 
+## Datasets and how each was collected
+
+Two datasets sit in this repo. They were gathered by different people using
+different methods, and the difference matters when citing either one.
+
+### Primary — `data/ads.csv`
+
+101 ads, 12 brands, collected 12 August 2026 by Shane Dooley.
+
+Gathered by hand from the Google Ads Transparency Center: search each advertiser,
+click "See all ads," read the live text ads, transcribe them. No automation, no
+scraping, no OCR. Every ad was read by a person before it entered the file.
+
+Current-state snapshot only. `first_seen` holds the collection date, not the true
+first-seen date. This is the dataset behind the headline finding.
+
+### Historical — `data/competitor_ads_5yr_v2.csv`
+
+1,786 ads, 8 brands, `first_seen` spanning 2021 to 2026, contributed by
+@andrewsilver314-ship-it.
+
+Collected differently: a year-stratified harvest with ad text extracted by OCR
+from rendered creatives, assisted by tooling rather than transcribed by hand.
+Some brands were dropped because the harvest hit rate limits. This is a different
+provenance from the primary set and is documented as such rather than blended
+into it.
+
+Two consequences. Occasional OCR artifacts survive in the text ("running-lnspired"
+for "inspired"), which is itself evidence the text is genuine extraction rather
+than anything generated. And because the sample is year-stratified rather than
+random, the brand mix swings hard between years — 2021 is 86% Adidas and Puma —
+so **year-over-year trend lines from this data are not valid** and are not
+claimed anywhere in this project.
+
+### Why both exist
+
+The historical set is used as corroboration, not as primary evidence. Four brands
+appear in both: lululemon, Nike, New Balance and Under Armour. Comparing their
+claim profiles across the two datasets is an independent replication check, since
+neither collection method or collector influenced the other.
+
+Mean absolute gap across all overlapping brand-theme pairs: **8 percentage
+points**. lululemon and New Balance agree within 6, Nike and Under Armour within
+10, with the larger gaps concentrated in Comfort and Style where the manual
+sample is smallest.
+
+Community and Belonging — the finding the whole analysis rests on — agrees within
+**0 to 4 points on all four brands**, and stays at or below 5% of the category in
+five of six years across the historical set. The gap is not an artifact of one
+sample, one collector, one method, or one month.
+
 ## Current dataset
 
 101 ads across 12 fitness apparel brands, collected 12 August 2026.
@@ -150,6 +203,10 @@ These are real and should be stated whenever the output is presented.
 **Source.** Google Ads Transparency Center only. No Meta, TikTok, LinkedIn, or
 organic search.
 
+**Provenance differs by dataset.** The 101-ad primary set was transcribed by hand.
+The 1,786-ad historical set was harvested with tooling and OCR by a teammate. Do
+not describe the whole project as hand-collected. See Datasets above.
+
 **Format.** Text ads only. Most spend in this category goes to video and image
 creative, which carries no copy to analyze. This is a teardown of *search
 messaging*, not of brand strategy as a whole.
@@ -163,6 +220,11 @@ the ads we sampled."
 **Dates.** The `first_seen` column holds the collection date, not the true
 first-seen date, which would require opening each ad individually. Do not cite
 it.
+
+**No trend claims.** The historical set carries real dates but is year-stratified,
+so its brand mix changes sharply year to year. Nothing in this project claims a
+year-over-year trend, and any such claim built on this data would be measuring
+sample composition rather than category behaviour.
 
 **Tagging.** No human has audited the tags. The tagger is a language model making
 judgment calls. The arithmetic reconciles exactly; that is a different claim from
@@ -180,8 +242,11 @@ brands cite proof. Read past the first screen of any source.
 
 ```
 data/ads.csv        input: one row per ad, four columns
-data/tags.json      frozen tags, committed, hand-editable
-src/build_matrix.py the tool
+data/tags.json      frozen tags for the primary set, committed, hand-editable
+data/competitor_ads_5yr_v2.csv   historical set, 2021-2026, contributed
+data/tags_trend.json             frozen tags for the historical set
+src/build_matrix.py the primary tool: current-state matrix
+src/trend_analysis.py  the historical analyser, separate tags and output
 output/             generated workbook
 docs/PRD.md         product requirements
 check_key.py        API key check
