@@ -33,25 +33,25 @@ from openpyxl.utils import get_column_letter
 # ---------------------------------------------------------------------------
 
 THEMES = [
+    "Performance / Technical fabric",
+    "Comfort / Feel",
+    "Style / Design",
+    "Versatility / Gym-to-street",
+    "Sustainability",
     "Price / Value",
-    "Speed / Efficiency",
-    "Ease of Use",
-    "Integrations / All-in-one",
-    "Trust / Scale",
-    "Customer Support",
-    "Enterprise / Security",
-    "Innovation / AI",
+    "Innovation / New technology",
+    "Community / Belonging",
 ]
 
 AUDIENCES = [
-    "Small business",
-    "Enterprise / IT",
-    "Marketing teams",
-    "Sales teams",
-    "Developers / Technical",
-    "Operations / Project managers",
-    "Executives / Leadership",
-    "General / Everyone",
+    "Women",
+    "Men",
+    "Runners",
+    "Yoga & studio",
+    "Gym & strength training",
+    "Outdoor & hiking",
+    "Everyday / athleisure",
+    "Size-inclusive",
 ]
 
 # ---------------------------------------------------------------------------
@@ -79,10 +79,13 @@ TAG_SCHEMA = {
             "type": "array",
             "items": {"type": "string", "enum": THEMES},
         },
-        "audience": {"type": "string", "enum": AUDIENCES},
+        "audiences": {
+            "type": "array",
+            "items": {"type": "string", "enum": AUDIENCES},
+        },
         "proof_points": {"type": "array", "items": {"type": "string"}},
     },
-    "required": ["themes", "audience", "proof_points"],
+    "required": ["themes", "audiences", "proof_points"],
     "additionalProperties": False,
 }
 
@@ -207,15 +210,17 @@ def validate(rows, path):
 # ---------------------------------------------------------------------------
 
 def tag_ad(competitor, ad_text):
-    """Tag one ad. Returns {themes, audience, proof_points}."""
+    """Tag one ad. Returns {themes, audiences, proof_points}."""
     prompt = (
         "You are analyzing a competitor's advertisement.\n\n"
         f"Brand: {competitor}\n"
         f'Ad copy: "{ad_text}"\n\n'
-        "Choose every message theme the ad clearly uses, the single primary "
-        "audience it speaks to, and any concrete proof points it cites "
+        "Choose every message theme the ad clearly uses, every audience it "
+        "clearly speaks to, and any concrete proof points it cites "
         "(numbers, customer counts, guarantees, awards, ratings). "
-        "If the ad cites no concrete proof, return an empty list."
+        "An ad can address more than one audience: name each one the copy "
+        "actually signals, not just the broadest. If the ad cites no concrete "
+        "proof, return an empty list."
     )
     resp = client.messages.create(
         model=TAG_MODEL,
@@ -229,8 +234,12 @@ def tag_ad(competitor, ad_text):
     except json.JSONDecodeError:
         data = {}
     return {
-        "themes": [t for t in data.get("themes", []) if t in THEMES],
-        "audience": data.get("audience", "") or "",
+        # dict.fromkeys dedupes while keeping the model's ordering, so one ad
+        # can never count twice against the same theme.
+        "themes": list(dict.fromkeys(t for t in data.get("themes", []) if t in THEMES)),
+        "audiences": list(
+            dict.fromkeys(a for a in data.get("audiences", []) if a in AUDIENCES)
+        ),
         "proof_points": data.get("proof_points", []) or [],
     }
 
@@ -466,8 +475,8 @@ def build_workbook(rows, tags, findings):
         comp = r["competitor"]
         for theme in t["themes"]:
             theme_counts[comp][theme] += 1
-        if t["audience"] in AUDIENCES:
-            audience_counts[comp][t["audience"]] += 1
+        for audience in t["audiences"]:
+            audience_counts[comp][audience] += 1
         for pt in t["proof_points"]:
             proof_counts[comp][pt.strip()] += 1
 
@@ -539,7 +548,7 @@ def build_workbook(rows, tags, findings):
             r["competitor"],
             r["ad_text"],
             ", ".join(t["themes"]),
-            t["audience"],
+            ", ".join(t["audiences"]),
             ", ".join(t["proof_points"]),
             r.get("format", ""),
             r.get("first_seen", ""),
@@ -592,8 +601,8 @@ def main():
         comp = r["competitor"]
         for theme in t["themes"]:
             theme_counts[comp][theme] += 1
-        if t["audience"] in AUDIENCES:
-            audience_counts[comp][t["audience"]] += 1
+        for audience in t["audiences"]:
+            audience_counts[comp][audience] += 1
         for pt in t["proof_points"]:
             if pt.strip() and pt.strip() not in proof_by_comp[comp]:
                 proof_by_comp[comp].append(pt.strip())
