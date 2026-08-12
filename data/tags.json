@@ -1,0 +1,588 @@
+{
+  "_readme": "Frozen ad tags. Edit a value here to correct a mis-tagged ad and the correction survives future runs. Delete this file, or run with --retag, to score every ad again from scratch.",
+  "ad_types": [
+    "Brand",
+    "Product",
+    "Promotional"
+  ],
+  "audiences": [
+    "Women",
+    "Men",
+    "Runners",
+    "Yoga & studio",
+    "Gym & strength training",
+    "Outdoor & hiking",
+    "Everyday / athleisure",
+    "Size-inclusive"
+  ],
+  "tags": {
+    "009dc56b7c61f26e": {
+      "ad_type": "Product",
+      "audiences": [
+        "Runners"
+      ],
+      "proof_points": [],
+      "themes": [
+        "Performance / Technical fabric",
+        "Comfort / Feel",
+        "Innovation / New technology"
+      ]
+    },
+    "00fc8fb8c345b1c1": {
+      "ad_type": "Promotional",
+      "audiences": [
+        "Women",
+        "Men",
+        "Everyday / athleisure"
+      ],
+      "proof_points": [],
+      "themes": [
+        "Sustainability",
+        "Versatility / Gym-to-street"
+      ]
+    },
+    "089fe0b44ff08b3f": {
+      "ad_type": "Brand",
+      "audiences": [
+        "Everyday / athleisure"
+      ],
+      "proof_points": [],
+      "themes": [
+        "Performance / Technical fabric",
+        "Comfort / Feel",
+        "Style / Design",
+        "Versatility / Gym-to-street"
+      ]
+    },
+    "0dcf8c70eae8cb49": {
+      "ad_type": "Product",
+      "audiences": [
+        "Women"
+      ],
+      "proof_points": [],
+      "themes": [
+        "Comfort / Feel",
+        "Style / Design",
+        "Versatility / Gym-to-street"
+      ]
+    },
+    "0fcd428f5c4d5253": {
+      "ad_type": "Product",
+      "audiences": [
+        "Men",
+        "Gym & strength training",
+        "Outdoor & hiking",
+        "Everyday / athleisure"
+      ],
+      "proof_points": [],
+      "themes": [
+        "Price / Value",
+        "Performance / Technical fabric",
+        "Versatility / Gym-to-street",
+        "Comfort / Feel",
+        "Style / Design"
+      ]
+    },
+    "1083a5e78fbe8d01": {
+      "ad_type": "Brand",
+      "audiences": [
+        "Women",
+        "Men",
+        "Everyday / athleisure"
+      ],
+      "proof_points": [],
+      "themes": [
+        "Comfort / Feel"
+      ]
+    },
+    "13f2e12f7486d0dc": {
+      "ad_type": "Product",
+      "audiences": [
+        "Everyday / athleisure"
+      ],
+      "proof_points": [],
+      "themes": [
+        "Style / Design"
+      ]
+    },
+    "15701209a218b764": {
+      "ad_type": "Product",
+      "audiences": [
+        "Everyday / athleisure",
+        "Gym & strength training"
+      ],
+      "proof_points": [],
+      "themes": [
+        "Performance / Technical fabric",
+        "Comfort / Feel",
+        "Style / Design",
+        "Innovation / New technology"
+      ]
+    },
+    "1f1ae1a7bc714110": {
+      "ad_type": "Product",
+      "audiences": [
+        "Outdoor & hiking"
+      ],
+      "proof_points": [],
+      "themes": [
+        "Performance / Technical fabric",
+        "Versatility / Gym-to-street"
+      ]
+    },
+    "28597530facb1fe4": {
+      "ad_type": "Product",
+      "audiences": [
+        "Runners"
+      ],
+      "proof_points": [
+        "5.0 rating from 22 reviews"
+      ],
+      "themes": [
+        "Performance / Technical fabric",
+        "Style / Design",
+        "Community / Belonging"
+      ]
+    },
+    "36b0e4eca804b686": {
+      "ad_type": "Product",
+      "audiences": [
+        "Men"
+      ],
+      "proof_points": [],
+      "themes": [
+        "Performance / Technical fabric",
+        "Comfort / Feel"
+      ]
+    },
+    "3aef7a5a14a7fd45": {
+      "ad_type": "Brand",
+      "audiences": [
+        "Women",
+        "Men",
+        "Everyday / athleisure"
+      ],
+      "proof_points": [],
+      "themes": [
+        "Performance / Technical fabric",
+        "Style / Design",
+        "Versatility / Gym-to-street"
+      ]
+    },
+    "3dfe131d13e71fd7": {
+      "ad_type": "Product",
+      "audiences": [
+        "Outdoor & hiking"
+      ],
+      "proof_points": [],
+      "themes": [
+        "Performance / Technical fabric"
+      ]
+    },
+    "46fc531ca53406d2": {
+      "ad_type": "Promotional",
+      "audiences": [
+        "Runners",
+        "Men",
+        "Women"
+      ],
+      "proof_points": [],
+      "themes": [
+        "Performance / Technical fabric"
+      ]
+    },
+    "5221a95c5cf39fff": {
+      "ad_type": "Brand",
+      "audiences": [
+        "Gym & strength training",
+        "Everyday / athleisure"
+      ],
+      "proof_points": [],
+      "themes": [
+        "Style / Design",
+        "Community / Belonging",
+        "Versatility / Gym-to-street"
+      ]
+    },
+    "5d8997ba35b3181e": {
+      "ad_type": "Product",
+      "audiences": [
+        "Women",
+        "Everyday / athleisure"
+      ],
+      "proof_points": [],
+      "themes": [
+        "Comfort / Feel",
+        "Versatility / Gym-to-street"
+      ]
+    },
+    "645a091ac92fe788": {
+      "ad_type": "Promotional",
+      "audiences": [
+        "Women",
+        "Men",
+        "Gym & strength training"
+      ],
+      "proof_points": [
+        "25% Off BTS Gear",
+        "Valid Jul 19 to Aug 21"
+      ],
+      "themes": [
+        "Comfort / Feel",
+        "Performance / Technical fabric"
+      ]
+    },
+    "668446c56d5f0ae0": {
+      "ad_type": "Promotional",
+      "audiences": [
+        "Women",
+        "Size-inclusive"
+      ],
+      "proof_points": [
+        "$19 swimsuits for new VIPs",
+        "80% off everything"
+      ],
+      "themes": [
+        "Price / Value",
+        "Comfort / Feel",
+        "Style / Design",
+        "Versatility / Gym-to-street"
+      ]
+    },
+    "6ae592f64f38feef": {
+      "ad_type": "Product",
+      "audiences": [
+        "Women"
+      ],
+      "proof_points": [],
+      "themes": [
+        "Performance / Technical fabric",
+        "Comfort / Feel",
+        "Style / Design"
+      ]
+    },
+    "6e33d3dfb8f715ac": {
+      "ad_type": "Product",
+      "audiences": [
+        "Runners"
+      ],
+      "proof_points": [
+        "Free Shipping",
+        "30-day Returns"
+      ],
+      "themes": [
+        "Performance / Technical fabric",
+        "Comfort / Feel"
+      ]
+    },
+    "7082a877256fa0f0": {
+      "ad_type": "Product",
+      "audiences": [
+        "Runners"
+      ],
+      "proof_points": [],
+      "themes": [
+        "Performance / Technical fabric",
+        "Comfort / Feel"
+      ]
+    },
+    "70e27aafa53a7e7f": {
+      "ad_type": "Promotional",
+      "audiences": [
+        "Outdoor & hiking",
+        "Everyday / athleisure"
+      ],
+      "proof_points": [
+        "Up to 40% Off"
+      ],
+      "themes": [
+        "Versatility / Gym-to-street"
+      ]
+    },
+    "71ade8b52c4893d3": {
+      "ad_type": "Product",
+      "audiences": [
+        "Gym & strength training",
+        "Runners",
+        "Everyday / athleisure"
+      ],
+      "proof_points": [
+        "Free Returns"
+      ],
+      "themes": [
+        "Innovation / New technology",
+        "Versatility / Gym-to-street"
+      ]
+    },
+    "83252c7d91338684": {
+      "ad_type": "Product",
+      "audiences": [
+        "Men",
+        "Women",
+        "Outdoor & hiking"
+      ],
+      "proof_points": [],
+      "themes": [
+        "Performance / Technical fabric",
+        "Comfort / Feel",
+        "Innovation / New technology"
+      ]
+    },
+    "867f2eed372b555a": {
+      "ad_type": "Product",
+      "audiences": [
+        "Women",
+        "Everyday / athleisure"
+      ],
+      "proof_points": [
+        "4.5 rating from 21,131 reviews",
+        "30+ days returnable"
+      ],
+      "themes": [
+        "Comfort / Feel"
+      ]
+    },
+    "88013ffe69c7caa5": {
+      "ad_type": "Promotional",
+      "audiences": [
+        "Everyday / athleisure"
+      ],
+      "proof_points": [
+        "Up to 30% Off Select Clothing and Accessories",
+        "25% Off Select Shoes"
+      ],
+      "themes": [
+        "Comfort / Feel",
+        "Style / Design",
+        "Versatility / Gym-to-street"
+      ]
+    },
+    "96c7da40c6ae1701": {
+      "ad_type": "Product",
+      "audiences": [
+        "Women",
+        "Everyday / athleisure"
+      ],
+      "proof_points": [],
+      "themes": [
+        "Comfort / Feel",
+        "Style / Design",
+        "Versatility / Gym-to-street"
+      ]
+    },
+    "b3ea04f37f0cc6b6": {
+      "ad_type": "Brand",
+      "audiences": [
+        "Outdoor & hiking"
+      ],
+      "proof_points": [
+        "Rating 4.0 from 24 reviews"
+      ],
+      "themes": [
+        "Sustainability"
+      ]
+    },
+    "bbd84c310fd82668": {
+      "ad_type": "Product",
+      "audiences": [
+        "Everyday / athleisure"
+      ],
+      "proof_points": [],
+      "themes": [
+        "Style / Design",
+        "Versatility / Gym-to-street"
+      ]
+    },
+    "ceae8706d3165a3c": {
+      "ad_type": "Product",
+      "audiences": [
+        "Women",
+        "Runners"
+      ],
+      "proof_points": [
+        "Rating 4.7 from 6,660 reviews",
+        "Average delivery time 1-3 days"
+      ],
+      "themes": [
+        "Performance / Technical fabric",
+        "Comfort / Feel"
+      ]
+    },
+    "d121f2ba6c57657c": {
+      "ad_type": "Product",
+      "audiences": [
+        "Runners"
+      ],
+      "proof_points": [
+        "Designed in Boston",
+        "Prices starting from $54.00"
+      ],
+      "themes": [
+        "Performance / Technical fabric"
+      ]
+    },
+    "d23f6d6161d23e20": {
+      "ad_type": "Product",
+      "audiences": [
+        "Women",
+        "Runners",
+        "Yoga & studio",
+        "Gym & strength training",
+        "Everyday / athleisure"
+      ],
+      "proof_points": [
+        "Sweat-wicking",
+        "Breathable",
+        "Anti-stink"
+      ],
+      "themes": [
+        "Performance / Technical fabric",
+        "Versatility / Gym-to-street"
+      ]
+    },
+    "d7228a2d5140ca86": {
+      "ad_type": "Brand",
+      "audiences": [],
+      "proof_points": [
+        "3.1 rating from 35 reviews"
+      ],
+      "themes": []
+    },
+    "da5a4074c774dbcc": {
+      "ad_type": "Brand",
+      "audiences": [
+        "Runners",
+        "Yoga & studio",
+        "Gym & strength training",
+        "Outdoor & hiking",
+        "Everyday / athleisure"
+      ],
+      "proof_points": [],
+      "themes": [
+        "Performance / Technical fabric",
+        "Comfort / Feel",
+        "Style / Design",
+        "Versatility / Gym-to-street",
+        "Innovation / New technology"
+      ]
+    },
+    "dafa515f9defc9e2": {
+      "ad_type": "Product",
+      "audiences": [
+        "Runners",
+        "Everyday / athleisure"
+      ],
+      "proof_points": [],
+      "themes": [
+        "Performance / Technical fabric",
+        "Comfort / Feel"
+      ]
+    },
+    "e5a945825f9f57f1": {
+      "ad_type": "Promotional",
+      "audiences": [
+        "Runners",
+        "Gym & strength training"
+      ],
+      "proof_points": [
+        "30-50% Off Sitewide",
+        "4.7 rating from 305 reviews"
+      ],
+      "themes": [
+        "Performance / Technical fabric",
+        "Comfort / Feel",
+        "Innovation / New technology",
+        "Style / Design"
+      ]
+    },
+    "ef53e1b3595fa0b6": {
+      "ad_type": "Product",
+      "audiences": [
+        "Runners"
+      ],
+      "proof_points": [],
+      "themes": [
+        "Performance / Technical fabric",
+        "Versatility / Gym-to-street"
+      ]
+    },
+    "f0c2455aefbd92bd": {
+      "ad_type": "Product",
+      "audiences": [
+        "Outdoor & hiking"
+      ],
+      "proof_points": [],
+      "themes": [
+        "Versatility / Gym-to-street"
+      ]
+    },
+    "f0e0320cf60f4bf2": {
+      "ad_type": "Product",
+      "audiences": [
+        "Men",
+        "Gym & strength training",
+        "Everyday / athleisure"
+      ],
+      "proof_points": [],
+      "themes": [
+        "Comfort / Feel",
+        "Style / Design",
+        "Versatility / Gym-to-street",
+        "Performance / Technical fabric"
+      ]
+    },
+    "f4e039898799dfc7": {
+      "ad_type": "Product",
+      "audiences": [
+        "Outdoor & hiking",
+        "Everyday / athleisure"
+      ],
+      "proof_points": [],
+      "themes": [
+        "Performance / Technical fabric",
+        "Versatility / Gym-to-street"
+      ]
+    },
+    "f6e6029dab0a8805": {
+      "ad_type": "Promotional",
+      "audiences": [
+        "Women"
+      ],
+      "proof_points": [
+        "First Scrub Set for $15",
+        "50% off Underscrubs",
+        "50% off Jackets and Vests",
+        "Breathable, lightweight and wrinkle resistant"
+      ],
+      "themes": [
+        "Price / Value",
+        "Comfort / Feel",
+        "Sustainability"
+      ]
+    },
+    "fa946fda03045fdd": {
+      "ad_type": "Brand",
+      "audiences": [
+        "Outdoor & hiking",
+        "Everyday / athleisure"
+      ],
+      "proof_points": [
+        "Guaranteed Quality"
+      ],
+      "themes": [
+        "Sustainability",
+        "Performance / Technical fabric"
+      ]
+    }
+  },
+  "themes": [
+    "Performance / Technical fabric",
+    "Comfort / Feel",
+    "Style / Design",
+    "Versatility / Gym-to-street",
+    "Sustainability",
+    "Price / Value",
+    "Innovation / New technology",
+    "Community / Belonging"
+  ]
+}

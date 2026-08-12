@@ -17,6 +17,7 @@ Default input:  data/sample_ads.csv
 Output:         output/messaging_matrix.xlsx
 """
 import csv
+import hashlib
 import json
 import os
 import sys
@@ -54,6 +55,15 @@ AUDIENCES = [
     "Size-inclusive",
 ]
 
+# What kind of ad this is. Search results are dominated by product-feed and
+# promotional ads, which say nothing about how a brand positions itself.
+# Tagging the type lets the matrix be run on brand-level ads alone.
+AD_TYPES = [
+    "Brand",          # says what the brand stands for
+    "Product",        # pushes a specific item or category
+    "Promotional",    # led by a discount, code, sale or loyalty offer
+]
+
 # ---------------------------------------------------------------------------
 
 TAG_MODEL = "claude-haiku-4-5"      # tags each ad: cheap, fast, accurate enough
@@ -83,9 +93,10 @@ TAG_SCHEMA = {
             "type": "array",
             "items": {"type": "string", "enum": AUDIENCES},
         },
+        "ad_type": {"type": "string", "enum": AD_TYPES},
         "proof_points": {"type": "array", "items": {"type": "string"}},
     },
-    "required": ["themes", "audiences", "proof_points"],
+    "required": ["themes", "audiences", "ad_type", "proof_points"],
     "additionalProperties": False,
 }
 
@@ -220,7 +231,11 @@ def tag_ad(competitor, ad_text):
         "(numbers, customer counts, guarantees, awards, ratings). "
         "An ad can address more than one audience: name each one the copy "
         "actually signals, not just the broadest. If the ad cites no concrete "
-        "proof, return an empty list."
+        "proof, return an empty list.\n\n"
+        "Also classify the ad. Brand means the copy says what the brand stands "
+        "for or who it is for. Product means it pushes a specific item or "
+        "category with no wider claim. Promotional means a discount, code, "
+        "sale or loyalty offer is doing the work."
     )
     resp = client.messages.create(
         model=TAG_MODEL,
@@ -240,8 +255,57 @@ def tag_ad(competitor, ad_text):
         "audiences": list(
             dict.fromkeys(a for a in data.get("audiences", []) if a in AUDIENCES)
         ),
+        "ad_type": data.get("ad_type") if data.get("ad_type") in AD_TYPES else "Product",
         "proof_points": data.get("proof_points", []) or [],
     }
+
+
+# ---------------------------------------------------------------------------
+# Frozen tags
+#
+# The model does not return identical tags for identical copy on every run, so
+# rebuilding from scratch each time makes the numbers move under you. Tags are
+# written to data/tags.json, keyed by a hash of the ad, and reused on later
+# runs. The file is committed, so the matrix is reproducible and a reviewer's
+# correction to a tag survives the next rebuild. Delete the file, or pass
+# --retag, to score everything again from scratch.
+# ---------------------------------------------------------------------------
+
+TAGS_PATH = os.path.join(BASE, "data", "tags.json")
+
+
+def ad_key(competitor, ad_text):
+    """Stable id for one ad, so tags survive reordering of the sheet."""
+    return hashlib.sha256(f"{competitor}\x00{ad_text}".encode("utf-8")).hexdigest()[:16]
+
+
+def load_frozen_tags():
+    if not os.path.exists(TAGS_PATH):
+        return {}
+    try:
+        with open(TAGS_PATH, encoding="utf-8") as fh:
+            return json.load(fh).get("tags", {})
+    except (json.JSONDecodeError, OSError):
+        print("  tags.json unreadable, re-tagging everything")
+        return {}
+
+
+def save_frozen_tags(frozen):
+    os.makedirs(os.path.dirname(TAGS_PATH), exist_ok=True)
+    payload = {
+        "_readme": (
+            "Frozen ad tags. Edit a value here to correct a mis-tagged ad and the "
+            "correction survives future runs. Delete this file, or run with "
+            "--retag, to score every ad again from scratch."
+        ),
+        "themes": THEMES,
+        "audiences": AUDIENCES,
+        "ad_types": AD_TYPES,
+        "tags": frozen,
+    }
+    with open(TAGS_PATH, "w", encoding="utf-8") as fh:
+        json.dump(payload, fh, indent=2, ensure_ascii=False, sort_keys=True)
+        fh.write("\n")
 
 
 def write_findings(rows, tags, theme_counts, audience_counts, proof_by_comp, whitespace):
@@ -352,38 +416,63 @@ def _header_row(ws, labels, row=1):
         c.border = BORDER
 
 
-def _count_matrix(ws, competitors, columns, counts, highlight_empty):
-    """Shared layout for the claim and audience matrices. Returns empty columns."""
-    _header_row(ws, ["Competitor"] + columns)
+def _count_matrix(ws, competitors, columns, counts, highlight_empty, ads_per_comp):
+    """Shared layout for the claim and audience matrices. Returns empty columns.
+
+    Cells hold the percent of that brand's ads using the column, not the raw
+    count. Brands are sampled unevenly (one may have 18 ads collected and
+    another 3), so raw counts would rank brands by how much of them we happened
+    to collect rather than by what they actually say. Column B keeps the
+    denominator visible so nobody reads a percent without knowing the base.
+    """
+    _header_row(ws, ["Competitor", "Ads"] + columns)
+    first_data_col = 3
 
     for i, comp in enumerate(competitors, start=2):
         bc = ws.cell(row=i, column=1, value=comp)
         bc.font = BOLD
         bc.alignment = LEFT
         bc.border = BORDER
-        for j, col in enumerate(columns, start=2):
+        n_ads = ads_per_comp[comp]
+        nc = ws.cell(row=i, column=2, value=n_ads)
+        nc.alignment = CENTER
+        nc.border = BORDER
+        for j, col in enumerate(columns, start=first_data_col):
             n = counts[comp][col]
-            c = ws.cell(row=i, column=j, value=(n if n else None))
+            pct = round(100 * n / n_ads) if n_ads else 0
+            c = ws.cell(row=i, column=j, value=(pct if n else None))
+            c.number_format = '0"%"'
             c.alignment = CENTER
             c.border = BORDER
             if n:
                 c.fill = IN_PLAY_FILL
 
     total_row = len(competitors) + 2
-    tc = ws.cell(row=total_row, column=1, value="TOTAL")
+    tc = ws.cell(row=total_row, column=1, value="CATEGORY %")
     tc.font = BOLD
     tc.alignment = LEFT
     tc.border = BORDER
-    for j in range(2, len(columns) + 2):
+    last = total_row - 1
+    nc = ws.cell(row=total_row, column=2, value=f"=SUM(B2:B{last})")
+    nc.font = BOLD
+    nc.alignment = CENTER
+    nc.border = BORDER
+    for j in range(first_data_col, len(columns) + first_data_col):
         letter = get_column_letter(j)
         c = ws.cell(row=total_row, column=j)
-        c.value = f"=SUM({letter}2:{letter}{total_row - 1})"
+        # Weight each brand's percent by its ad count to recover the true
+        # share of all ads, so the row stays live if a cell is edited.
+        c.value = (
+            f"=ROUND(SUMPRODUCT($B$2:$B${last},{letter}2:{letter}{last})"
+            f"/SUM($B$2:$B${last}),0)"
+        )
+        c.number_format = '0"%"'
         c.font = BOLD
         c.alignment = CENTER
         c.border = BORDER
 
     empty = []
-    for j, col in enumerate(columns, start=2):
+    for j, col in enumerate(columns, start=first_data_col):
         if sum(counts[comp][col] for comp in competitors) == 0:
             empty.append(col)
             if highlight_empty:
@@ -391,9 +480,10 @@ def _count_matrix(ws, competitors, columns, counts, highlight_empty):
                     ws.cell(row=i, column=j).fill = WHITESPACE_FILL
 
     ws.column_dimensions["A"].width = 18
-    for j in range(2, len(columns) + 2):
+    ws.column_dimensions["B"].width = 7
+    for j in range(first_data_col, len(columns) + first_data_col):
         ws.column_dimensions[get_column_letter(j)].width = 15
-    ws.freeze_panes = "B2"
+    ws.freeze_panes = "C2"
     return empty, total_row
 
 
@@ -471,8 +561,10 @@ def build_workbook(rows, tags, findings):
     theme_counts = defaultdict(lambda: defaultdict(int))
     audience_counts = defaultdict(lambda: defaultdict(int))
     proof_counts = defaultdict(lambda: defaultdict(int))
+    ads_per_comp = defaultdict(int)
     for r, t in zip(rows, tags):
         comp = r["competitor"]
+        ads_per_comp[comp] += 1
         for theme in t["themes"]:
             theme_counts[comp][theme] += 1
         for audience in t["audiences"]:
@@ -488,11 +580,15 @@ def build_workbook(rows, tags, findings):
 
     # ---- Sheet 2: Messaging Matrix (claims) ----
     ws = wb.create_sheet("Messaging Matrix")
-    whitespace, total_row = _count_matrix(ws, competitors, THEMES, theme_counts, True)
+    whitespace, total_row = _count_matrix(
+        ws, competitors, THEMES, theme_counts, True, ads_per_comp
+    )
     note = ws.cell(
         row=total_row + 2,
         column=1,
-        value="Cell = number of that brand's ads using the theme. Blue = a theme in play. "
+        value="Cell = percent of that brand's ads using the theme. Ads = how many of "
+        "that brand's ads we sampled, which is the denominator. Percentages let "
+        "brands with different sample sizes be compared. Blue = a theme in play. "
         "Peach columns = whitespace (no competitor is using it).",
     )
     note.font = Font(italic=True, color="666666")
@@ -500,13 +596,13 @@ def build_workbook(rows, tags, findings):
     # ---- Sheet 3: Audience Matrix ----
     ws2 = wb.create_sheet("Audience Matrix")
     unaddressed, total_row2 = _count_matrix(
-        ws2, competitors, AUDIENCES, audience_counts, True
+        ws2, competitors, AUDIENCES, audience_counts, True, ads_per_comp
     )
     note2 = ws2.cell(
         row=total_row2 + 2,
         column=1,
-        value="Cell = number of that brand's ads aimed at the audience. "
-        "Peach columns = audiences no competitor is speaking to.",
+        value="Cell = percent of that brand's ads aimed at the audience. Ads = the "
+        "denominator. Peach columns = audiences no competitor is speaking to.",
     )
     note2.font = Font(italic=True, color="666666")
 
@@ -541,12 +637,13 @@ def build_workbook(rows, tags, findings):
     ws4 = wb.create_sheet("Tagged Ads")
     _header_row(
         ws4,
-        ["Competitor", "Ad copy", "Themes", "Audience", "Proof points", "Format", "First seen"],
+        ["Competitor", "Ad copy", "Ad type", "Themes", "Audience", "Proof points", "Format", "First seen"],
     )
     for i, (r, t) in enumerate(zip(rows, tags), start=2):
         vals = [
             r["competitor"],
             r["ad_text"],
+            t["ad_type"],
             ", ".join(t["themes"]),
             ", ".join(t["audiences"]),
             ", ".join(t["proof_points"]),
@@ -579,18 +676,53 @@ def build_workbook(rows, tags, findings):
 # ---------------------------------------------------------------------------
 
 def main():
-    in_path = sys.argv[1] if len(sys.argv) > 1 else os.path.join(BASE, "data", "sample_ads.csv")
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    flags = {a for a in sys.argv[1:] if a.startswith("--")}
+    retag = "--retag" in flags
+    brand_only = "--brand-only" in flags
+
+    in_path = args[0] if args else os.path.join(BASE, "data", "sample_ads.csv")
     if not os.path.isabs(in_path):
         in_path = os.path.join(BASE, in_path)
 
     rows = validate(read_ads(in_path), in_path)
-    print(f"Read {len(rows)} ads from {os.path.relpath(in_path, BASE)}. Tagging with Claude...")
+    print(f"Read {len(rows)} ads from {os.path.relpath(in_path, BASE)}.")
+
+    frozen = {} if retag else load_frozen_tags()
+    if retag:
+        print("--retag: scoring every ad again, ignoring saved tags.")
 
     tags = []
+    reused = 0
     for r in rows:
-        t = tag_ad(r["competitor"], r["ad_text"])
+        key = ad_key(r["competitor"], r["ad_text"])
+        t = frozen.get(key)
+        if t and all(k in t for k in ("themes", "audiences", "ad_type", "proof_points")):
+            reused += 1
+        else:
+            t = tag_ad(r["competitor"], r["ad_text"])
+            frozen[key] = t
+            print(f"  tagged {r['competitor']}: {', '.join(t['themes']) or '(no clear theme)'}")
         tags.append(t)
-        print(f"  {r['competitor']}: {', '.join(t['themes']) or '(no clear theme)'}")
+
+    print(f"\nReused {reused} saved tag(s), scored {len(rows) - reused} new ad(s).")
+    save_frozen_tags(frozen)
+    print(f"Tags frozen in {os.path.relpath(TAGS_PATH, BASE)}")
+
+    if brand_only:
+        keep = [(r, t) for r, t in zip(rows, tags) if t["ad_type"] == "Brand"]
+        dropped = len(rows) - len(keep)
+        if not keep:
+            print("--brand-only left no ads. Run without the flag.")
+            raise SystemExit(1)
+        rows = [r for r, _ in keep]
+        tags = [t for _, t in keep]
+        print(f"--brand-only: kept {len(rows)} brand-level ad(s), set aside {dropped}.")
+
+    mix = defaultdict(int)
+    for t in tags:
+        mix[t["ad_type"]] += 1
+    print("Ad mix: " + ", ".join(f"{k} {v}" for k, v in sorted(mix.items())))
 
     # Precompute what the findings pass needs.
     competitors = sorted({r["competitor"] for r in rows})
