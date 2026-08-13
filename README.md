@@ -279,3 +279,32 @@ pushes are blocked, and the branch cannot be deleted.
 If you are collecting ads and do not use git, you do not need to. Attach your CSV
 to a comment on your issue, or use **Add file → Upload files** in the browser and
 open a pull request from there.
+
+## Frozen submission snapshot
+
+`submission/` holds the exact deliverable as presented and submitted on 12 August
+2026, including both self-contained HTML surfaces. Nothing in that folder should
+be edited. Work continues on the rest of the repo; the snapshot is what gets
+graded and what we fall back to if a later change breaks something.
+
+The same state is tagged `friday-submission`. To restore the whole repo to it:
+
+```bash
+git checkout friday-submission
+```
+
+To see what has changed since the freeze:
+
+```bash
+git diff friday-submission..main --stat
+```
+
+## Web surfaces
+
+`web/` holds the source of both browser deliverables. Both are single self-contained
+files with all 101 ads embedded, so they open offline with no server and no network.
+
+| File | What it is |
+|---|---|
+| `web/live_deck.html` | The interactive presentation: 11 slides, clickable matrix, brand-traceable canvas, proof explorer, and a whitespace search over every ad. Arrow keys or click to advance, `/` to search, `Esc` for a slide grid, `F` for fullscreen. |
+| `web/review_page.html` | The findings page shared with the team for review. |

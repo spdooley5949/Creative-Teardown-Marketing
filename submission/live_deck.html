@@ -1,0 +1,572 @@
+<title>Creative Teardown — Live</title>
+<style>
+  :root{
+    --paper:#FFFFFF; --wash:#ECF1F6; --mist:#F4F6F8; --panel:#FFFFFF;
+    --ink:#1F2933; --mid:#44515F; --grey:#69747F; --line:#D5DDE4;
+    --sig:#C2410C; --tint:#FDECE2; --sigsoft:#F6D9C9;
+    --c1:#EDF2F7; --c2:#CFDDE9; --c3:#9FBBD3; --c4:#5D8CB3; --c5:#2E6389;
+    --head:Cambria,"Iowan Old Style",Georgia,serif;
+    --body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--paper)}
+  body{font-family:var(--body);color:var(--ink);
+       font-size:clamp(15px,1.05vw,22px);line-height:1.5;-webkit-font-smoothing:antialiased}
+  h1,h2,h3{font-family:var(--head);font-weight:600;margin:0;text-wrap:balance}
+
+  #deck{position:relative;width:100%}
+  .slide{min-height:100vh;padding:clamp(28px,3.4vw,64px);
+    display:none;flex-direction:column;background:var(--paper)}
+  .slide.on{display:flex}
+  .slide.wash{background:var(--wash)}
+
+  .eyebrow{font-size:.62em;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--sig);margin-bottom:.5em}
+  .title{font-size:clamp(30px,3.5vw,62px);line-height:1.1;letter-spacing:-.015em}
+  .huge{font-size:clamp(40px,5.2vw,96px);line-height:1.04;letter-spacing:-.02em}
+  .sub{color:var(--mid);font-size:1.02em;max-width:46ch}
+  .rule{width:clamp(60px,7vw,120px);height:5px;background:var(--sig);margin:.9em 0 .7em}
+  .spacer{flex:1}
+  .foot{color:var(--grey);font-size:.72em}
+
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(10px,1.1vw,20px);
+    margin-top:auto;margin-bottom:auto}
+  .stat{background:var(--mist);padding:clamp(16px,1.7vw,32px);border-radius:6px;
+    display:flex;flex-direction:column;justify-content:center}
+  .stat.hot{background:var(--tint)}
+  .stat .n{font-family:var(--head);font-weight:700;font-size:clamp(38px,4.6vw,86px);
+    line-height:1;letter-spacing:-.02em}
+  .stat.hot .n{color:var(--sig)}
+  .stat .l{margin-top:.5em;font-size:.8em;color:var(--mid);line-height:1.35}
+  .stat.hot .l{color:var(--sig)}
+
+  /* matrix */
+  .mwrap{flex:1;display:flex;gap:clamp(14px,1.4vw,26px);min-height:0;margin-top:.6em}
+  .mgrid{flex:1;overflow:auto;min-width:0}
+  table.mx{border-collapse:separate;border-spacing:3px;width:100%}
+  table.mx th{font-size:.62em;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+    color:var(--grey);text-align:center;padding:.3em .2em;vertical-align:bottom;line-height:1.2}
+  table.mx th.b{text-align:left;padding-left:.2em}
+  table.mx th.ws{color:var(--sig)}
+  table.mx td{text-align:center;font-family:var(--mono);font-variant-numeric:tabular-nums;
+    font-size:.82em;padding:.55em .2em;border-radius:4px;cursor:pointer;
+    transition:transform .08s,outline-color .08s;outline:2px solid transparent}
+  table.mx td.b{text-align:left;font-family:var(--body);font-weight:650;cursor:default;
+    background:none;padding-left:.2em;white-space:nowrap}
+  table.mx td.z{color:#AEB8C2;background:var(--mist)}
+  table.mx td:not(.b):not(.z):hover{outline-color:var(--ink);transform:scale(1.06)}
+  table.mx td.sel{outline-color:var(--sig)!important;transform:scale(1.06)}
+  .k1{background:var(--c1)}.k2{background:var(--c2)}.k3{background:var(--c3)}
+  .k4{background:var(--c4);color:#fff}.k5{background:var(--c5);color:#fff}
+  td.wsz{background:var(--tint)!important;color:var(--sig)!important}
+
+  .mside{width:clamp(280px,29vw,520px);background:var(--mist);border-radius:6px;
+    padding:clamp(14px,1.3vw,24px);overflow:auto;display:flex;flex-direction:column}
+  .mside h3{font-family:var(--body);font-size:.86em;font-weight:700}
+  .mside .hint{color:var(--grey);font-size:.78em;margin-top:.4em}
+  .adcard{background:var(--panel);border-radius:5px;padding:.75em .85em;margin-top:.6em;
+    font-size:.74em;line-height:1.45;border-left:3px solid var(--sig)}
+  .adcard .tags{margin-top:.45em;color:var(--grey);font-size:.9em}
+
+  /* canvas */
+  .cvwrap{flex:1;display:flex;flex-direction:column;min-height:0}
+  .chips{display:flex;flex-wrap:wrap;gap:.4em;margin:.5em 0 .3em}
+  .chip{font-size:.7em;padding:.32em .7em;border-radius:99px;border:1.5px solid var(--line);
+    background:var(--paper);cursor:pointer;color:var(--mid);font-weight:600}
+  .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chip.all{border-color:var(--sig);color:var(--sig)}
+  .chip.all.on{background:var(--sig);color:#fff}
+  svg.cv{flex:1;width:100%;min-height:0}
+
+  /* proof */
+  .pwrap{flex:1;display:flex;gap:clamp(14px,1.4vw,26px);min-height:0;margin-top:.6em}
+  .plist{width:clamp(230px,22vw,340px);overflow:auto}
+  .prow{padding:.55em .7em;border-radius:5px;cursor:pointer;display:flex;
+    justify-content:space-between;gap:.6em;align-items:baseline;font-size:.82em}
+  .prow:hover{background:var(--mist)}
+  .prow.on{background:var(--ink);color:#fff}
+  .prow .v{font-family:var(--mono);font-size:.9em;color:var(--grey)}
+  .prow.on .v{color:#C8D2DC}
+  .prow.none .v{color:var(--sig)}
+  .pdetail{flex:1;background:var(--mist);border-radius:6px;padding:clamp(14px,1.4vw,26px);
+    overflow:auto}
+
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:clamp(16px,1.8vw,34px);
+    flex:1;align-items:center;min-height:0}
+  .three{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(12px,1.3vw,24px);margin-top:auto;margin-bottom:auto}
+  .card{background:var(--mist);border-radius:6px;padding:clamp(16px,1.5vw,28px)}
+  .card.hot{background:var(--tint)}
+  .card h3{font-family:var(--body);font-size:.88em;font-weight:700;margin-bottom:.5em}
+  .card.hot h3,.card.hot p{color:var(--sig)}
+  .card p{color:var(--mid);font-size:.8em;line-height:1.5;margin:0}
+
+  table.plain{border-collapse:collapse;width:100%;font-size:.82em}
+  table.plain th{text-align:left;font-size:.68em;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--grey);padding:.4em .5em;font-weight:700}
+  table.plain td{padding:.55em .5em;border-top:1px solid var(--line)}
+  table.plain td.n{font-family:var(--mono);font-variant-numeric:tabular-nums}
+  table.plain .hot{color:var(--sig);font-weight:700}
+
+  ol.learn{list-style:none;padding:0;margin:auto 0;display:flex;flex-direction:column;gap:clamp(8px,.9vw,18px)}
+  ol.learn li{display:grid;grid-template-columns:2.2em 1fr 1fr;gap:clamp(10px,1.2vw,24px);align-items:baseline}
+  ol.learn .num{font-family:var(--head);font-weight:700;color:var(--sig);font-size:.9em}
+  ol.learn .w{font-weight:650;font-size:.92em}
+  ol.learn .y{color:var(--mid);font-size:.8em}
+
+  /* chrome */
+  #bar{position:sticky;bottom:0;left:0;bottom:0;height:4px;background:var(--sig);z-index:60;transition:width .25s}
+  #num{position:fixed;right:clamp(14px,1.4vw,26px);bottom:clamp(10px,1vw,20px);
+    font-family:var(--mono);font-size:.68em;color:var(--grey);z-index:60}
+  #help{position:fixed;left:clamp(14px,1.4vw,26px);bottom:clamp(10px,1vw,20px);
+    font-size:.62em;color:var(--grey);z-index:60}
+  #grid{position:fixed;inset:0;background:rgba(31,41,51,.96);z-index:80;display:none;
+    padding:clamp(20px,3vw,50px);overflow:auto}
+  #grid.on{display:block}
+  #grid h4{color:#fff;font-family:var(--body);font-size:.8em;letter-spacing:.1em;
+    text-transform:uppercase;margin:0 0 1em}
+  .gg{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:.8em}
+  .gi{background:#2C3742;border-radius:6px;padding:1em;cursor:pointer;color:#DCE3EA;font-size:.78em}
+  .gi:hover{background:var(--sig);color:#fff}
+  .gi b{display:block;font-size:1.05em;margin-bottom:.25em;color:#fff}
+  /* whitespace finder */
+  .sbox{display:flex;gap:.5em;align-items:center;margin:.4em 0 .2em}
+  .sbox input{flex:1;font-family:var(--body);font-size:clamp(17px,1.7vw,30px);
+    padding:.45em .7em;border:2px solid var(--line);border-radius:6px;background:var(--paper);
+    color:var(--ink);min-width:0}
+  .sbox input:focus{outline:none;border-color:var(--sig)}
+  .sugg{display:flex;flex-wrap:wrap;gap:.35em;margin-bottom:.5em}
+  .sugg button{font-size:.68em;padding:.3em .7em;border-radius:99px;border:1.5px solid var(--line);
+    background:var(--paper);color:var(--mid);cursor:pointer;font-family:var(--body);font-weight:600}
+  .sugg button:hover{border-color:var(--sig);color:var(--sig)}
+  .sres{flex:1;display:grid;grid-template-columns:1fr 1fr 1.15fr;gap:clamp(10px,1.1vw,20px);
+    min-height:0;margin-top:.3em}
+  .scol{background:var(--mist);border-radius:6px;padding:clamp(12px,1.1vw,20px);
+    overflow:auto;display:flex;flex-direction:column}
+  .scol.gap{background:var(--tint)}
+  .scol h4{margin:0 0 .5em;font-family:var(--body);font-size:.72em;font-weight:700;
+    letter-spacing:.08em;text-transform:uppercase;color:var(--grey)}
+  .scol.gap h4{color:var(--sig)}
+  .bline{display:flex;justify-content:space-between;gap:.5em;padding:.3em 0;
+    border-bottom:1px solid var(--line);font-size:.82em}
+  .bline:last-child{border-bottom:0}
+  .bline .c{font-family:var(--mono);color:var(--grey);font-variant-numeric:tabular-nums}
+  .scol.gap .bline{border-color:var(--sigsoft);font-weight:650;color:var(--sig)}
+  .shit{background:var(--paper);border-radius:5px;padding:.55em .7em;margin-bottom:.45em;
+    font-size:.72em;line-height:1.45;border-left:3px solid var(--sig)}
+  .shit b{background:var(--tint);color:var(--sig);padding:0 .15em;border-radius:2px}
+  .shit .who{display:block;font-weight:700;color:var(--ink);margin-bottom:.2em;font-size:.95em}
+  .verdict{font-size:.9em;font-weight:650;margin-top:.5em;color:var(--ink)}
+  .verdict em{color:var(--sig);font-style:normal}
+
+  #ctl{position:fixed;right:clamp(12px,1.3vw,24px);bottom:clamp(30px,3vw,54px);
+    display:flex;gap:.4em;z-index:70}
+  #ctl button{width:clamp(38px,3.4vw,54px);height:clamp(38px,3.4vw,54px);border-radius:50%;
+    border:1.5px solid var(--line);background:rgba(255,255,255,.94);color:var(--ink);
+    font-size:clamp(15px,1.4vw,22px);cursor:pointer;line-height:1;
+    display:flex;align-items:center;justify-content:center;font-family:var(--body)}
+  #ctl button:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+  #ctl button.map{font-size:clamp(12px,1vw,15px)}
+  @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div id="deck">
+
+  <section class="slide wash on" data-t="Title">
+    <div class="spacer"></div>
+    <h1 class="huge">Twelve brands.<br>One message.</h1>
+    <div class="rule"></div>
+    <p class="sub">A creative teardown of what fitness apparel actually says in paid search.</p>
+    <div class="spacer"></div>
+    <p class="foot"><b style="color:var(--sig)">101 text ads &middot; 12 brands &middot; listed 12 Aug 2026 &middot; replicated on a second 1,786-ad set</b><br><br>
+      <b style="color:var(--ink)">Shane Dooley</b><br>
+      with Andrew Silver, Catherine Chambers, Jessica Smith, Jesse Padilla and William Levine</p>
+  </section>
+
+  <section class="slide" data-t="The finding">
+    <p class="eyebrow">The finding</p>
+    <h2 class="title">The category has run out of ways to say &ldquo;comfortable.&rdquo;</h2>
+    <div class="stats">
+      <div class="stat"><div class="n">59%</div><div class="l">claim technical performance</div></div>
+      <div class="stat"><div class="n">58%</div><div class="l">claim comfort</div></div>
+      <div class="stat"><div class="n">51%</div><div class="l">claim gym-to-street versatility</div></div>
+      <div class="stat hot"><div class="n">6%</div><div class="l">claim community or belonging</div></div>
+    </div>
+    <p class="sub" style="max-width:80ch">Across all twelve brands the language is near-interchangeable:
+      &ldquo;buttery soft,&rdquo; &ldquo;built to move in,&rdquo; &ldquo;looks as good as it feels.&rdquo;
+      <b style="color:var(--sig)">Community is six ads in the entire set &mdash; five of them Gymshark&rsquo;s.</b></p>
+  </section>
+
+  <section class="slide" data-t="Matrix &mdash; click any cell">
+    <p class="eyebrow">Evidence &mdash; click any cell to read the actual ads</p>
+    <h2 class="title" style="font-size:clamp(24px,2.4vw,42px)">Where the category is stacked, and where it is not</h2>
+    <div class="mwrap">
+      <div class="mgrid"><table class="mx" id="mx"></table></div>
+      <aside class="mside" id="mside">
+        <h3>Click a number</h3>
+        <p class="hint">Every cell is the percent of that brand&rsquo;s ads using that claim.
+          Click one and the real ad copy behind it appears here &mdash; these are the receipts.</p>
+      </aside>
+    </div>
+  </section>
+
+  <section class="slide" data-t="Strategy canvas">
+    <p class="eyebrow">Evidence &mdash; click a brand to trace it</p>
+    <h2 class="title" style="font-size:clamp(24px,2.4vw,42px)">Twelve brands, one shape</h2>
+    <div class="cvwrap">
+      <div class="chips" id="chips"></div>
+      <svg class="cv" id="cv" viewBox="0 0 1000 420" preserveAspectRatio="xMidYMid meet"
+           role="img" aria-label="Strategy canvas: twelve brands rise and fall together, collapsing at community."></svg>
+    </div>
+  </section>
+
+  <section class="slide" data-t="Replication">
+    <p class="eyebrow">Independent check</p>
+    <h2 class="title">The finding holds on data we did not collect</h2>
+    <div class="two">
+      <div>
+        <p class="sub" style="max-width:none">A teammate contributed <b>1,786 ads across eight brands, 2021 to 2026</b>,
+          gathered a different way. Four brands appear in both sets. Neither collector saw the other&rsquo;s work.</p>
+        <table class="plain" style="margin-top:1.2em">
+          <thead><tr><th>Brand</th><th>By hand</th><th>Harvested</th><th>Gap</th><th class="hot">Community</th></tr></thead>
+          <tbody>
+            <tr><td>lululemon</td><td class="n">18</td><td class="n">244</td><td class="n">6 pts</td><td class="n hot">0% vs 1%</td></tr>
+            <tr><td>New Balance</td><td class="n">4</td><td class="n">246</td><td class="n">6 pts</td><td class="n hot">0% vs 0%</td></tr>
+            <tr><td>Nike</td><td class="n">8</td><td class="n">227</td><td class="n">10 pts</td><td class="n hot">0% vs 3%</td></tr>
+            <tr><td>Under Armour</td><td class="n">7</td><td class="n">153</td><td class="n">10 pts</td><td class="n hot">0% vs 4%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <div class="stat hot" style="padding:clamp(20px,2.2vw,40px)">
+          <div class="n" style="font-size:clamp(34px,3.8vw,68px)">0&ndash;4 points</div>
+          <div class="l" style="font-size:.95em">agreement on community, all four brands</div>
+        </div>
+        <p style="margin-top:1.1em;font-weight:650;font-size:1.05em;line-height:1.45">
+          Different collector. Different method.<br>Different brands. Different years.<br>
+          <span style="color:var(--sig)">Same answer.</span></p>
+        <p class="foot" style="margin-top:1em">The second set is year-stratified, so its brand mix swings between
+          years. No trend is claimed from it.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-t="Proof gap &mdash; click a brand">
+    <p class="eyebrow">The second finding &mdash; click a brand to see its evidence</p>
+    <h2 class="title" style="font-size:clamp(24px,2.4vw,42px)">Two in three ads make a claim and prove nothing</h2>
+    <div class="pwrap">
+      <div class="plist" id="plist"></div>
+      <div class="pdetail" id="pdetail">
+        <h3 style="font-family:var(--body);font-size:.9em">67% of ads carry no hard evidence</h3>
+        <p class="hint" style="color:var(--grey);font-size:.82em;margin-top:.5em">
+          No rating, no review count, no price, no guarantee. Click a brand to see exactly what it does
+          put in front of a buyer, and how thin some of it is.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-t="The opening">
+    <p class="eyebrow">The opening</p>
+    <h2 class="title">One brand owns belonging. Nobody else contests it.</h2>
+    <p style="color:var(--sig);font-weight:700;font-size:1.05em;margin-top:.6em">
+      Community is uncontested territory, and even its owner does not prove it.</p>
+    <div class="three">
+      <div class="card"><h3>What exists</h3><p>Gymshark has made belonging half its message: coached
+        couch-to-5K and half-marathon programmes. Alo has ALO Access. Everyone else: zero.</p></div>
+      <div class="card"><h3>What is missing</h3><p>Neither publishes a participation number, a completion
+        rate or a member count. The claim exists; the proof does not.</p></div>
+      <div class="card hot"><h3>The move</h3><p>A named programme with published numbers, placed where
+        competitors put discount percentages. Ten brands have ceded the lane to one competitor who is not defending it with evidence.</p></div>
+    </div>
+    <p class="sub" style="max-width:none">Spend against runners and gym training, not the everyday
+      athleisure block where lululemon, Vuori and Fabletics are stacked.</p>
+  </section>
+
+
+  <section class="slide" data-t="Whitespace finder &mdash; live search">
+    <p class="eyebrow">Whitespace finder &mdash; type anything, see who is not saying it</p>
+    <h2 class="title" style="font-size:clamp(22px,2.2vw,38px)">Search all 101 ads</h2>
+    <div class="sbox">
+      <input id="q" type="search" placeholder="community, guarantee, sustainable, women, 20% off&hellip;"
+             autocomplete="off" spellcheck="false" aria-label="Search all ads">
+    </div>
+    <div class="sugg" id="sugg"></div>
+    <div class="sres">
+      <div class="scol"><h4>Brands saying it</h4><div id="s-yes"></div></div>
+      <div class="scol gap"><h4>Brands not saying it &mdash; the whitespace</h4><div id="s-no"></div></div>
+      <div class="scol"><h4>The actual ads</h4><div id="s-hits"></div></div>
+    </div>
+    <p class="verdict" id="s-verdict"></p>
+  </section>
+
+  <section class="slide wash" data-t="What we got wrong">
+    <p class="eyebrow">What we got wrong</p>
+    <h2 class="title">Our first answer was confident and false</h2>
+    <p style="color:var(--sig);font-size:1.02em;margin-top:.5em">At 42 ads we concluded three brands
+      cited no proof at all. That was wrong.</p>
+    <table class="plain" style="margin-top:1.2em">
+      <thead><tr><th>Brand</th><th>What we said</th><th>What they actually run</th></tr></thead>
+      <tbody>
+        <tr><td><b>Vuori</b></td><td style="color:var(--grey);font-style:italic">&ldquo;The biggest proof gap in the group&rdquo;</td>
+            <td class="hot">4.6 from 13,593 reviews, 100% product guarantee</td></tr>
+        <tr><td><b>Gymshark</b></td><td style="color:var(--grey);font-style:italic">&ldquo;Free returns only&rdquo;</td>
+            <td class="hot">4.6 from 200 reviews</td></tr>
+        <tr><td><b>lululemon</b></td><td style="color:var(--grey);font-style:italic">&ldquo;Fabric adjectives only&rdquo;</td>
+            <td class="hot">Three separate ratings</td></tr>
+      </tbody>
+    </table>
+    <div class="spacer"></div>
+    <p class="sub" style="max-width:none">The Transparency Center shows four ads until you click
+      &ldquo;See all ads.&rdquo; Those four skew to product listings, which carry no ratings.
+      We went back and collected the full lists. Then a teammate audited every tag and found
+      42 more errors, including in our own headline count &mdash; all corrected before this presentation.</p>
+  </section>
+
+  <section class="slide" data-t="What we learned">
+    <p class="eyebrow">What we learned</p>
+    <h2 class="title">Five things the workbook does not show</h2>
+    <ol class="learn">
+      <li><span class="num">01</span><span class="w">The bottleneck was collection, not intelligence</span><span class="y">Classifying 101 ads took ninety seconds. Collecting them took hours.</span></li>
+      <li><span class="num">02</span><span class="w">A shallow sample gives a confident wrong answer</span><span class="y">Not a vague one. That is far more dangerous.</span></li>
+      <li><span class="num">03</span><span class="w">Model output drifts unless you freeze it</span><span class="y">Two runs on identical data moved 14 tags and rewrote the headline.</span></li>
+      <li><span class="num">04</span><span class="w">Most search advertising is not positioning</span><span class="y">Only 16 of 101 ads were brand-level. The rest is product feed.</span></li>
+      <li><span class="num">05</span><span class="w">The valuable output was the empty column</span><span class="y">Every recommendation came from what nobody said.</span></li>
+    </ol>
+  </section>
+
+  <section class="slide wash" data-t="Close">
+    <div class="spacer"></div>
+    <h2 class="huge" style="font-size:clamp(30px,3.9vw,72px)">Everyone is selling the same fabric.<br>
+      Nobody is selling belonging with proof.</h2>
+    <div class="rule"></div>
+    <p style="color:var(--sig);font-size:1.3em;font-weight:700">That is the lane.</p>
+    <div class="spacer"></div>
+    <p class="foot">Workbook, data, tagging and full write-up<br>
+      <b style="color:var(--ink);font-size:1.15em">github.com/spdooley5949/Creative-Teardown-Marketing</b><br><br>
+      Shane Dooley &middot; with Andrew Silver, Catherine Chambers, Jessica Smith, Jesse Padilla and William Levine</p>
+  </section>
+
+</div>
+
+<div id="bar"></div>
+<div id="num"></div>
+<div id="help">&larr; &rarr; move &middot; / search &middot; Esc all slides &middot; F fullscreen</div>
+<div id="ctl">
+  <button id="pv" title="Previous">&lsaquo;</button>
+  <button id="mp" class="map" title="All slides">&#9783;</button>
+  <button id="nx" title="Next">&rsaquo;</button>
+</div>
+<div id="grid"><h4>Jump to a slide</h4><div class="gg" id="gg"></div></div>
+
+<script>
+const ADS=[{"b":"lululemon","t":"lululemon Women's Tank Tops - lululemon Tank Tops For Women. Our Tank-Tops Were Made To Run In, Train In, Flow In, And Relax In. Some That Do It All. Sweat-Wicking, Breathable, Anti-Stink.","th":["Performance / Technical fabric","Versatility / Gym-to-street"],"au":["Women","Runners","Yoga & studio","Gym & strength training","Everyday / athleisure"],"pf":[],"ty":"Product"},{"b":"lululemon","t":"lululemon Official Site - lululemon Women's Clothing. You're This Close To Versatile Shorts That Look As Good As They Feel. In Shorts This Lightweight.","th":["Comfort / Feel","Style / Design","Versatility / Gym-to-street"],"au":["Women"],"pf":[],"ty":"Product"},{"b":"lululemon","t":"Leggings Fit For Every Move - lululemon Official Site. Make Better Leggings Your Base. Then Style And Move The Way You Want In Total Comfort.","th":["Comfort / Feel","Versatility / Gym-to-street"],"au":["Women","Everyday / athleisure"],"pf":[],"ty":"Product"},{"b":"lululemon","t":"lululemon Official Site. Stores Globally. We Made Too Much. Like New Resale Program.","th":["Sustainability","Versatility / Gym-to-street","Price / Value"],"au":["Women","Men","Everyday / athleisure"],"pf":[],"ty":"Promotional"},{"b":"Nike","t":"Womens Dri-FIT Running Shorts. Nike.com. Shop The Official Nike Store For The Latest Nike Shoes, Apparel and Gear. Live Support Available. Styles: Shoes, Clothing, Accessories, Sport. Rating 4.7 from 6,660 reviews. Average delivery time 1-3 days.","th":["Performance / Technical fabric","Comfort / Feel"],"au":["Women","Runners"],"pf":["Rating 4.7 from 6,660 reviews, Average delivery time 1-3 days"],"ty":"Product"},{"b":"Nike","t":"Womens Golf Shoes. Nike.com. Shop Womens Golf Shoes Designed With Comfort, Style and Performance In Mind. Gear Up For Sport And Style With Nike Products Designed For Performance And Comfort. Live Support Available.","th":["Performance / Technical fabric","Comfort / Feel","Style / Design"],"au":["Women"],"pf":[],"ty":"Product"},{"b":"Nike","t":"Golf Gloves and Mitts. Nike.com. Shop The Official Nike Store For The Latest Nike Shoes, Apparel and Gear. Gear Up For Sport And Style With Nike Products Designed For Performance And Comfort.","th":["Performance / Technical fabric","Comfort / Feel","Style / Design","Versatility / Gym-to-street"],"au":["Everyday / athleisure"],"pf":[],"ty":"Product"},{"b":"Nike","t":"Soccer Jerseys. Nike.com. Gear Up For Soccer. Get Everything You Need For Your Best Season Ever. Shop The Latest Soccer Gear For A Fresh Start On The Field. Start Back Strong. Live Support Available. Models: Air Force 1, VaporMax, Air Max, Pegasus, Joyride, Vaporfly, React.","th":["Performance / Technical fabric","Versatility / Gym-to-street"],"au":[],"pf":[],"ty":"Product"},{"b":"Alo Yoga","t":"Denim Knit Mini Dress - Black/Anthracite. Crafted from soft, structured, ribbed-knit fabric inspired by the nuanced texture of denim, this mini dress takes your going-out looks to great lengths. Rating 4.5 from 21,131 reviews. Most items returnable 30+ days.","th":["Comfort / Feel"],"au":["Women","Everyday / athleisure"],"pf":["4.5 rating from 21,131 reviews, 30+ days returnable"],"ty":"Product"},{"b":"Alo Yoga","t":"ALO Official Site - Performance Ready Activewear. Go from studio to street. ALO men's shorts deliver buttery-soft comfort and an active fit. Celeb-approved training shorts, trending for dynamic, empowered movement.","th":["Comfort / Feel","Style / Design","Versatility / Gym-to-street","Performance / Technical fabric"],"au":["Men","Gym & strength training","Everyday / athleisure"],"pf":[],"ty":"Product"},{"b":"Alo Yoga","t":"ALO. Clothing store. Open now. Call or get Directions. Rating 3.1 from 35 reviews.","th":[],"au":[],"pf":["3.1 rating from 35 reviews"],"ty":"Product"},{"b":"Vuori","t":"Shop Vuori Performance Gear - Vuori Clothing. A New Perspective on Performance Apparel. An Integration Of Fitness, Surf and Sport. Premium Performance Apparel, Without Sacrificing Comfort.","th":["Performance / Technical fabric","Comfort / Feel","Style / Design","Versatility / Gym-to-street"],"au":["Runners","Yoga & studio","Gym & strength training","Outdoor & hiking","Everyday / athleisure"],"pf":[],"ty":"Brand"},{"b":"Vuori","t":"Women's Sweatpants - Your New Favorite Sweatpants. Achieve Maximum Comfort With Vuori Sweatpants. You'll Never Want To Take Them Off. Designed For Style, Comfort and Performance. Free Shipping.","th":["Comfort / Feel","Style / Design","Versatility / Gym-to-street"],"au":["Women","Everyday / athleisure"],"pf":[],"ty":"Product"},{"b":"Vuori","t":"Vuori Clothing - Official Site. A New Perspective On Performance Apparel. Free Shipping On Orders $75+. Shop Men's And Women's Performance Apparel. Built To Move In. Styled For Life.","th":["Performance / Technical fabric","Style / Design","Versatility / Gym-to-street","Price / Value"],"au":["Women","Men","Everyday / athleisure"],"pf":[],"ty":"Brand"},{"b":"Vuori","t":"Vuori Clothing - Comfort For Your Active Life. A New Perspective On Performance Apparel. Free Shipping On Orders $75+. Shop Men's And Women's Performance Apparel. Built To Move In. Styled For Life.","th":["Comfort / Feel","Price / Value"],"au":["Women","Men","Everyday / athleisure"],"pf":[],"ty":"Brand"},{"b":"On","t":"On Official Store - Free Shipping. 30-day Returns. Runners that want to double up on cushioning and support without slowing down. Maximum cushioning.","th":["Performance / Technical fabric","Comfort / Feel"],"au":["Runners"],"pf":["30-day Returns"],"ty":"Product"},{"b":"On","t":"On's Waterproof Collection - Discover Our Waterproof Shoes. Element-proof Swiss-engineering. Shelter from the storm. Get rain ready. Seasons change. Trainings shouldn't. Master the elements with our waterproof gear. Wet weather gear: high-tech jackets, shoes and accessories to beat the elements. All-day sneakers: unbeatable comfort for the city, travel or everyday exploring.","th":["Performance / Technical fabric","Versatility / Gym-to-street"],"au":["Outdoor & hiking","Everyday / athleisure"],"pf":[],"ty":"Product"},{"b":"On","t":"Cloudboom Strike 2 LS - Run On Clouds - On Official Store. The pinnacle marathon racing shoe for fast-feeling comfort. Updated LightSpray upper for a seamless, adaptive fit. Limited editions.","th":["Performance / Technical fabric","Comfort / Feel","Innovation / New technology"],"au":["Runners"],"pf":[],"ty":"Product"},{"b":"On","t":"On Official Store - Free Shipping. Updated shape, structure and volume for superior comfort, cushioning and stability.","th":["Performance / Technical fabric","Comfort / Feel","Style / Design","Innovation / New technology"],"au":["Everyday / athleisure","Runners"],"pf":[],"ty":"Product"},{"b":"Under Armour","t":"Zero Gravity Feel - 30-50% Off Sitewide. Energy Return That Helps Eliminate Impact Step After Step. Shop The UA HOVR Collection, The Perfect Balance Between Sport and Style. Rating 4.7 from 305 reviews. UA HOVR Cushioning: connected technology and revolutionary cushioning designed by those who know. UA HOVR Infinite 2: more coaching, more miles, go further and faster. Too Comfy To Be Slowed Down.","th":["Performance / Technical fabric","Comfort / Feel","Innovation / New technology","Style / Design","Price / Value"],"au":["Runners","Gym & strength training"],"pf":["30-50% Off Sitewide, 4.7 rating from 305 reviews"],"ty":"Promotional"},{"b":"Under Armour","t":"The Official Site - Join UA Rewards. Get The Gear Everyone's After. Shop Under Armour Training Gear Today. Experience Superior Comfort and Durability. Women's Apparel. Men's Apparel. 25% Off BTS Gear. 25% off UA back-to-school deals valid Jul 19 to Aug 21.","th":["Comfort / Feel","Performance / Technical fabric","Price / Value"],"au":["Women","Men","Gym & strength training"],"pf":["25% Off BTS Gear, Valid Jul 19 to Aug 21"],"ty":"Promotional"},{"b":"Gymshark","t":"Gymshark Official Store - Gym Clothes Store. Unlock your full potential with our game-changing workout clothes. Shop gym clothing for the gym, running and everything in-between. New Releases. Free Returns.","th":["Innovation / New technology","Versatility / Gym-to-street"],"au":["Gym & strength training","Runners","Everyday / athleisure"],"pf":[],"ty":"Product"},{"b":"Gymshark","t":"Socks Are We Supposed To Be Wearing? The Great Gen Z Debate. Are ankle socks out of style? TikTok might be telling you they are a millennial giveaway, read on to find out whether it's time to swap them out for Crew socks. New Releases.","th":["Style / Design"],"au":["Everyday / athleisure"],"pf":[],"ty":"Product"},{"b":"Gymshark","t":"Gymshark - We Do Gym - The Gym Is Everything We Do. Your New PBs Will Look Good In A Fresh New Gymshark Fit. Get Yours Now. However You Gym, We've Got The Clothes, Accessories and Community.","th":["Style / Design","Community / Belonging","Versatility / Gym-to-street"],"au":["Gym & strength training","Everyday / athleisure"],"pf":[],"ty":"Brand"},{"b":"Arc'teryx","t":"Arc'teryx Outerwear - Products made for performance - Outlast the sun. Protect your skin with Arc'teryx men's sun protective clothing collection. Stay shielded from the sun and cool from the heat with breathable, protective gear. High-Performance Apparel. Free Shipping and Returns. Men's Collection. Women's Collection. Arc'teryx New Arrivals.","th":["Performance / Technical fabric","Comfort / Feel","Innovation / New technology"],"au":["Men","Women","Outdoor & hiking"],"pf":[],"ty":"Product"},{"b":"Arc'teryx","t":"It's the season of long days. Made with lightweight fabrics and built-in sun protection for long days. Outdoor clothing and equipment shop, Aspen, 534 East Cooper Avenue.","th":["Performance / Technical fabric"],"au":["Outdoor & hiking"],"pf":[],"ty":"Product"},{"b":"Arc'teryx","t":"Lightweight gear - Made for trails. Lightweight by design, these technical shells are built for fast vertical gain. Grab the season's best breathable layers and fast-drying fabrics to chase daylight.","th":["Performance / Technical fabric","Versatility / Gym-to-street"],"au":["Outdoor & hiking"],"pf":[],"ty":"Product"},{"b":"Arc'teryx","t":"Arc'teryx Fashion Island. Outdoor clothing and equipment shop, Newport Beach. Rating 4.0 from 24 reviews. Shop preloved clothing and gear from your favorite brand to save your wallet and landfill.","th":["Sustainability"],"au":["Outdoor & hiking"],"pf":["Rating 4.0 from 24 reviews"],"ty":"Brand"},{"b":"Patagonia","t":"Patagonia Gear Made to Last - Built for Years, Not Seasons. Guaranteed Quality and Profits Go to the Planet. Shop Patagonia Clothing and Gear. Explore Quality Patagonia Clothing and Gear for Snow, Surfing.","th":["Sustainability","Performance / Technical fabric"],"au":["Outdoor & hiking","Everyday / athleisure"],"pf":["Guaranteed Quality"],"ty":"Brand"},{"b":"Patagonia","t":"Travel Duffel Bags - Patagonia Duffel Bags. Travel Duffel Bags That Swallow All the Gear in Your Van with Room for Half Your Garage. Be It a Fun-Hog outing or an expedition.","th":["Versatility / Gym-to-street"],"au":["Outdoor & hiking"],"pf":[],"ty":"Product"},{"b":"Patagonia","t":"Up to 40% Off. Need a Break? Select Styles Are Now On Sale. Now's the Time to Get Your Fill. Outdoor clothing and equipment shop, Encinitas, 2185 San Elijo Avenue.","th":["Price / Value"],"au":["Outdoor & hiking","Everyday / athleisure"],"pf":["Up to 40% Off"],"ty":"Promotional"},{"b":"Tracksmith","t":"Stay Ready For Race Day - Essentials For Serious Runners. Running Bottoms Designed In Boston To Meet The Rigorous Demands Of Runners Everywhere. Discover Tracksmith Running Bottoms. Crafted For The Pursuit Of Personal Excellence. Rating 5.0 from 22 reviews. Spring 26 Collection.","th":["Performance / Technical fabric","Style / Design"],"au":["Runners"],"pf":["5.0 rating from 22 reviews"],"ty":"Product"},{"b":"Tracksmith","t":"Tracksmith Running Tights - Running Tops, Shorts and More. Tracksmith Running Gear Is Designed In Boston To Meet The Demands Of Runners Everywhere. Shop Tracksmith For Running Tops, Bottoms And More. View 5 prices from $54.00.","th":["Performance / Technical fabric","Price / Value"],"au":["Runners"],"pf":["Prices starting from $54.00"],"ty":"Product"},{"b":"Tracksmith","t":"Next-Level Running Apparel - High Performance Running Pants. Running Essentials To Keep You Race Day Ready. Free Shipping On Orders Over $150. Built to Last and Made for Miles, These are the Staples We Run All Year.","th":["Performance / Technical fabric","Comfort / Feel","Price / Value"],"au":["Runners"],"pf":[],"ty":"Product"},{"b":"Tracksmith","t":"Tracksmith - Made For Mileage - Running Tops, Shorts and More. Discover Tracksmith, Running Apparel Crafted For The Pursuit Of Personal Excellence. Shop Men's Running Best Sellers. Women's Collection. Running Footwear. 20% Off Your First Order. Remarkable Running Shoes.","th":["Performance / Technical fabric","Price / Value"],"au":["Runners","Men","Women"],"pf":[],"ty":"Promotional"},{"b":"New Balance","t":"New Balance Lifestyle - Shop The Lifestyle Collection. New Balance Lifestyle Is Your Go-To Place For Daily Footwear. Shop The Collection Now. Up to 30% Off Select Clothing and Accessories and 25% Off Select Shoes. New Balance 992 Exemplifies Craftsmanship Inside And Out.","th":["Comfort / Feel","Style / Design","Versatility / Gym-to-street","Price / Value"],"au":["Everyday / athleisure"],"pf":["Up to 30% Off Select Clothing and Accessories, 25% Off Select Shoes"],"ty":"Promotional"},{"b":"New Balance","t":"New Balance Back to School - Back to School Shopping. From Backpacks To Apparel New Balance Has All The Styles For The School Year Ahead. Time To Upgrade and Update With New Balance Back To School Styles.","th":["Style / Design","Versatility / Gym-to-street"],"au":["Everyday / athleisure"],"pf":[],"ty":"Product"},{"b":"New Balance","t":"New Balance 1080v15 - New Balance Running Collection. A Whole New Way Of Looking At The Most Comfortable Running Shoe We Can Make, Period. A New Way To Experience Everything You Rely On In An Everyday Running Shoe. Extended Widths. New Infinion Foam Midsole. Contoured Details. Established In 1906.","th":["Performance / Technical fabric","Comfort / Feel"],"au":["Runners","Everyday / athleisure"],"pf":[],"ty":"Product"},{"b":"New Balance","t":"4040 Baseball Cleat - Men's Cleats. The 4040 Baseball Shoe That Delivers Traction To Bring Ultimate Performance. Combined The Function And Comfort Sought By Every Level Of Baseball Player.","th":["Performance / Technical fabric","Comfort / Feel"],"au":["Men"],"pf":[],"ty":"Product"},{"b":"Fabletics","t":"Stop Overpaying for Activewear - Online Activewear For Men. Sweat in Style: Fabletics Men's Activewear for Every Workout. Versatile Performance Pieces Armed with All the Essentials to Train, Travel or Trailblaze. Anti-Stink.","th":["Price / Value","Performance / Technical fabric","Versatility / Gym-to-street","Comfort / Feel","Style / Design"],"au":["Men","Gym & strength training","Outdoor & hiking","Everyday / athleisure"],"pf":[],"ty":"Product"},{"b":"Fabletics","t":"Affordable Green Scrubs - First Scrub Set for $15. Our scrub sets are breathable, lightweight and wrinkle resistant. $15 for new Fabletics VIPs. 50% off Underscrubs. 50% off Jackets and Vests. Exclusive $15 Set for New VIPs. Built-In Bra Scrub Top.","th":["Price / Value","Comfort / Feel"],"au":["Women"],"pf":["First Scrub Set for $15, 50% off Underscrubs, 50% off Jackets and Vests"],"ty":"Promotional"},{"b":"Fabletics","t":"Swimsuits for $19 as a New VIP - Swim Tops for Big Busts. Active swim styles designed for support, stretch, and confidence. Get 80% Off everything when you sign up as a VIP.","th":["Price / Value","Comfort / Feel","Style / Design","Versatility / Gym-to-street"],"au":["Women","Size-inclusive"],"pf":["$19 swimsuits for new VIPs, 80% off everything"],"ty":"Promotional"},{"b":"lululemon","t":"Shop lululemon Like New - Lululemon Like New. Gently used gear that's just getting started. The official lululemon resale shop is your second chance at past favorites. Sell Online. 25% Off Reduced Shop. Resale Program. Women's Gear Under $50.","th":["Sustainability","Price / Value"],"au":["Women","Everyday / athleisure"],"pf":["25% Off Reduced Shop, Women's Gear Under $50"],"ty":"Promotional"},{"b":"lululemon","t":"lululemon Like New - New Life For Gently Used Gear. The Like New Resale Shop Is Packed With Thousands of Gently Used Gems, Dropping Daily.","th":["Sustainability","Price / Value"],"au":["Everyday / athleisure"],"pf":[],"ty":"Promotional"},{"b":"lululemon","t":"Shop Women's Pants lululemon Like New - The Like New Resale Shop. Packed With Thousands Of Gently Used Gems, Dropping Daily. Pre-Loved Pieces Like This Are Right At Home In The Gym.","th":["Sustainability","Price / Value","Versatility / Gym-to-street"],"au":["Women","Gym & strength training"],"pf":[],"ty":"Product"},{"b":"lululemon","t":"New Gear Just Dropped - All New Sweatshirts and Hoodies. Soft Sweatshirts Are The Perfect Go-Tos After A Hard Workout. Long, Cropped, Oversized, Slim.","th":["Comfort / Feel","Versatility / Gym-to-street"],"au":["Women","Everyday / athleisure"],"pf":[],"ty":"Product"},{"b":"lululemon","t":"Shop lululemon Scuba Hoodies. Scuba Half Zips Take Comfort To Go, With Naturally Breathable, Soft Fleecy Fabric. Rating 4.7 from 185 reviews. Most items returnable 30+ days.","th":["Comfort / Feel","Style / Design","Versatility / Gym-to-street"],"au":["Women","Everyday / athleisure"],"pf":["4.7 rating from 185 reviews, 30+ days returnable"],"ty":"Product"},{"b":"lululemon","t":"Super-Soft Loungewear Is A Go - lululemon Loungewear. Reset And Recharge In Loungewear That Fits Like It's Made For You. Versatile Loungewear That Feels As Good As It Looks.","th":["Comfort / Feel"],"au":["Everyday / athleisure"],"pf":[],"ty":"Product"},{"b":"lululemon","t":"lululemon Official Site - Move In Your Favorite Color. Versatile, Streamlined Sweatpants That Look As Good As They Feel. Men's Bestsellers. Men's Winter Clothes.","th":["Comfort / Feel","Style / Design","Versatility / Gym-to-street"],"au":["Men","Everyday / athleisure"],"pf":[],"ty":"Product"},{"b":"lululemon","t":"You Pick The Length - Shop Men's Underwear. Our Technical Men's Boxers Are Breathable, Roomy, And Come In Different Lengths.","th":["Performance / Technical fabric","Comfort / Feel","Style / Design","Versatility / Gym-to-street"],"au":["Men"],"pf":[],"ty":"Product"},{"b":"lululemon","t":"Shop lululemon Golf - Golf Gear, Fit For More. Explore Stretchy, Featherlight Golf Gear Crafted To Keep You, And Your Swing, In Harmony. Ultralight.","th":["Performance / Technical fabric","Comfort / Feel","Style / Design","Versatility / Gym-to-street"],"au":["Men","Outdoor & hiking"],"pf":[],"ty":"Product"},{"b":"lululemon","t":"Women's Golf Clothes - lululemon. Women's run, training, and yoga gear to keep you covered and comfortable no matter how you like to sweat. Rating 4.7 from 183 reviews.","th":["Comfort / Feel","Versatility / Gym-to-street"],"au":["Women","Runners","Yoga & studio","Gym & strength training"],"pf":["4.7 rating from 183 reviews"],"ty":"Product"},{"b":"lululemon","t":"Sign Up For Early Access - Our Shirts Go Beyond Comfort. T-Shirts This Stretchy and Lightweight Redefine What Comfortable Feels Like. 4.6 advertiser rating.","th":["Comfort / Feel","Performance / Technical fabric","Innovation / New technology"],"au":["Everyday / athleisure"],"pf":["4.6 advertiser rating"],"ty":"Product"},{"b":"lululemon","t":"Women's Vests - Lululemon. Our Technical Vests Offer Warmth Without The Weight, And They Pack Down Small. Rating 4.6 from 104 reviews. We Made Too Much.","th":["Comfort / Feel","Performance / Technical fabric","Price / Value"],"au":["Women","Everyday / athleisure"],"pf":["4.6 rating from 104 reviews"],"ty":"Product"},{"b":"lululemon","t":"Women's Hoodies and Sweatshirts. Versatile Hoodies That Fit Like They're Made For You. Winter Collection Out Now. Free Hemming. Buy Now Pay Later Options.","th":["Comfort / Feel","Versatility / Gym-to-street"],"au":["Women","Everyday / athleisure"],"pf":[],"ty":"Product"},{"b":"lululemon","t":"Stretchy Jackets Are A Go - Our Jackets Go Beyond Comfort. Versatile Jackets That Look As Good As They Feel. In Jackets This Lightweight.","th":["Performance / Technical fabric","Comfort / Feel","Style / Design","Versatility / Gym-to-street"],"au":["Women","Everyday / athleisure"],"pf":[],"ty":"Product"},{"b":"Nike","t":"Shop Nike Back To School - Nike Men's Activewear. Use promo code DAYONE to get an extra 25% off on select styles. Shop Nike men's apparel for training.","th":["Price / Value"],"au":["Men","Gym & strength training"],"pf":[],"ty":"Promotional"},{"b":"Nike","t":"Nike - Online Store - The Official Nike Site. Prepare for Matchday and Beyond with Official Nike Football Gear. Gear up for Glory on the Pitch. Click and Collect. Free Delivery For Members. Become A Nike Member.","th":["Style / Design","Versatility / Gym-to-street"],"au":["Men"],"pf":[],"ty":"Promotional"},{"b":"Nike","t":"Kids Giannis Antetokounmpo Shoes. Nike.com. Shop The Latest Nike Basketball Styles Designed For Performance. Available On Nike.com.","th":["Performance / Technical fabric"],"au":[],"pf":[],"ty":"Product"},{"b":"Nike","t":"Yoga Shorts. Nike.com. Shop The Official Nike Store For The Latest Nike Shoes, Apparel and Gear. Gear Up For Sport And Style With Nike Products Designed For Performance And Comfort. Live Support Available. Rating 4.6 from 1,919 reviews. Most items returnable 60+ days.","th":["Performance / Technical fabric","Comfort / Feel","Style / Design"],"au":["Women","Yoga & studio"],"pf":["Rating 4.6 from 1,919 reviews, Most items returnable 60+ days"],"ty":"Product"},{"b":"Vuori","t":"Vuori Performance Apparel - Sign Up and Get 20% Off - New Arrivals Are Here. Shop Men's And Women's Performance Apparel. Built To Move In. Styled For Life. 4-Way Stretch. Moisture Wicking. Breathable. 100% Product Guarantee. Free Shipping Over $75. Rating 4.6 from 13,593 reviews. Most items returnable 120+ days.","th":["Performance / Technical fabric","Versatility / Gym-to-street","Comfort / Feel","Price / Value"],"au":["Women","Men"],"pf":["4-Way Stretch, 100% Product Guarantee, Free Shipping Over $75, Rating 4.6 from 13,593 reviews, Most items returnable 120+ days"],"ty":"Promotional"},{"b":"Vuori","t":"Vuori Clothing - Sign Up and Get 20% Off. Vuori Performance Apparel, Built To Move In. Styled For Life. The Tom Holland Edit. Women's Best Sellers. New Arrivals Are Here.","th":["Performance / Technical fabric","Style / Design","Versatility / Gym-to-street","Price / Value"],"au":["Women","Everyday / athleisure"],"pf":[],"ty":"Promotional"},{"b":"Vuori","t":"Modern Golf Apparel - Golf Performance Apparel. Thoughtfully Crafted Golf Apparel For Players Who Appreciate Timeless Style And Fit. Shop Vuori Golf And Discover Elevated Apparel You'll Reach For Long. Rating 4.6 from 14,413 reviews. Most items returnable 120+ days.","th":["Style / Design","Comfort / Feel","Performance / Technical fabric","Versatility / Gym-to-street"],"au":["Men","Everyday / athleisure"],"pf":["4.6 rating from 14,413 reviews, 120+ days returnable"],"ty":"Product"},{"b":"Vuori","t":"Sign Up and Get 20% Off - Vuori Official Site. Meet Your New Everyday Clothing. Sign Up With Email and Enjoy 20% Off Your First Purchase. Crafted From The Best.","th":["Comfort / Feel","Versatility / Gym-to-street","Style / Design","Innovation / New technology","Price / Value"],"au":["Everyday / athleisure","Women","Men"],"pf":[],"ty":"Promotional"},{"b":"Vuori","t":"Official Vuori Site - Men's and Women's Shorts. Vuori Performance Apparel Is Built To Move and Sweat In, Yet Styled For Everyday Life. Designed For Style, Comfort and Performance. Free Shipping. Lightweight and Breathable. New To Vuori?","th":["Performance / Technical fabric","Comfort / Feel","Style / Design","Versatility / Gym-to-street"],"au":["Women","Men","Everyday / athleisure"],"pf":[],"ty":"Brand"},{"b":"Vuori","t":"Men's and Women's Pants - Official Vuori Site. Crafted From The Best Performance Fabrics and Designed For The Adventurer In All Of Us. Women's Joggers. Men's Signature Joggers. Gym-To-Street Wear.","th":["Comfort / Feel","Versatility / Gym-to-street","Style / Design"],"au":["Women","Men","Gym & strength training","Everyday / athleisure"],"pf":[],"ty":"Product"},{"b":"Gymshark","t":"Your First 5K - Run your first 5K. We'll guide you through every step with an 8-week couch-to-5k training plan, tips from those who've done it, and advice from a coach. 5K Training Plan.","th":["Community / Belonging"],"au":["Runners","Everyday / athleisure"],"pf":[],"ty":"Brand"},{"b":"Gymshark","t":"How to Train for a Half Marathon From Beginner to Advanced. We share everything you need to include, along with training tips and advice from a Running Coach. New Releases. Student Discount. Pay in 4 Installments. E-Gift Cards. Free Returns. Contactless Delivery.","th":["Performance / Technical fabric","Versatility / Gym-to-street","Community / Belonging","Price / Value"],"au":["Runners"],"pf":[],"ty":"Brand"},{"b":"Gymshark","t":"The Gym Is Everything We Do - Gymshark. Achieve Your Best In and Out Of The Gym With Our High Quality Products and Unrivalled Design.","th":["Performance / Technical fabric","Style / Design","Versatility / Gym-to-street"],"au":["Gym & strength training","Everyday / athleisure"],"pf":[],"ty":"Brand"},{"b":"Gymshark","t":"Buy Now, Pay Later - Gymshark Gym Clothing. However You Gym, We've Got The Clothes, Accessories and Community For You. Shop Gymshark Gym Apparel. Women's Best Sellers. Sale and Exclusives.","th":["Versatility / Gym-to-street","Community / Belonging","Price / Value"],"au":["Women","Gym & strength training","Everyday / athleisure"],"pf":[],"ty":"Promotional"},{"b":"Gymshark","t":"Men's Workout Shorts and Sport Shorts - Gymshark. Elevate your workout with our high-performance gym shorts. The perfect fusion of style and functionality for superior comfort. Free Delivery available.","th":["Performance / Technical fabric","Comfort / Feel","Style / Design"],"au":["Men","Gym & strength training"],"pf":[],"ty":"Product"},{"b":"Gymshark","t":"Gymshark - Official Store - Gym Clothes and Workout Wear. However You Gym, We've Got The Clothes, Accessories and Community For You. Us? Obsessed With The Gym? Yes. Pay in 4 Installments. Student Discount. New Releases. Contactless Delivery.","th":["Performance / Technical fabric","Comfort / Feel","Community / Belonging","Price / Value"],"au":["Women","Men","Gym & strength training","Everyday / athleisure"],"pf":[],"ty":"Brand"},{"b":"Gymshark","t":"Gymshark Official Store - Gym Clothes and Workout Clothes. Unlock your full potential with Gymshark workout clothes. Free delivery on orders over $100. E-Gift Cards. Student Discount. New Releases. Free Returns. Pay in 4 Installments. Rating 4.6 from 200 reviews.","th":["Performance / Technical fabric","Comfort / Feel","Versatility / Gym-to-street","Price / Value"],"au":["Gym & strength training","Runners","Yoga & studio","Everyday / athleisure"],"pf":["Free delivery on orders over $100, 4.6 rating from 200 reviews, Pay in 4 Installments"],"ty":"Promotional"},{"b":"On","t":"On Cyclon Resale - Shop Official Refurbished On Gear. A Second Chance For Every Product.","th":["Sustainability","Price / Value"],"au":["Everyday / athleisure"],"pf":[],"ty":"Promotional"},{"b":"On","t":"On Hiking Shoes - On Official Store - With Missiongrip. Hike without pausing your adventure with light, breathable, high-comfort hiking boots. Discover On's hiking boots for those who live for outdoor adventures. Limited editions. Free shipping.","th":["Performance / Technical fabric","Comfort / Feel","Versatility / Gym-to-street"],"au":["Outdoor & hiking"],"pf":[],"ty":"Product"},{"b":"On","t":"On Official Store - Free Shipping. 30-day Returns. The all-day icon, upgraded. Meet the Cloud, designed to keep you going all day. New sockliner for easy step-in, wider opening for a better fit, and more heel support. Rating 4.6 from 58 reviews.","th":["Comfort / Feel","Versatility / Gym-to-street","Innovation / New technology"],"au":["Everyday / athleisure"],"pf":["4.6 rating from 58 reviews, 30-day returns"],"ty":"Product"},{"b":"On","t":"On Official Store - On - Swiss Engineering. Engineered for high performance and complete comfort. Find the right shoe for you. Run on clouds. Men's Collection. All-day sneakers. On's best sellers. Running, Outdoor and All Day.","th":["Performance / Technical fabric","Comfort / Feel","Innovation / New technology"],"au":["Men","Runners","Outdoor & hiking","Everyday / athleisure"],"pf":[],"ty":"Brand"},{"b":"On","t":"Running Shoes and Clothing. Run on clouds with our collection of Swiss-engineered performance running shoes and apparel. Last season: last chance for pieces from previous seasons, save up to 40%. All-day sneakers: unbeatable comfort for the city, travel or everyday exploring.","th":["Performance / Technical fabric","Comfort / Feel","Versatility / Gym-to-street","Innovation / New technology","Price / Value"],"au":["Runners","Everyday / athleisure"],"pf":["save up to 40%"],"ty":"Product"},{"b":"On","t":"On Cloudhero Waterproof - Outdoor Shoe For Kids. Rain, puddle or storm, the fully waterproof membrane keeps feet feeling dry and fresh. With an ultra-sticky Missiongrip outsole, so kids can stay sure-footed.","th":["Performance / Technical fabric","Comfort / Feel","Innovation / New technology"],"au":["Outdoor & hiking"],"pf":[],"ty":"Product"},{"b":"On","t":"Cloudmonster 3 Wide. Triple layer of CloudTec, the maximum iteration of energy return, ready to roll. Speedboard keeps you on pace, from start to finish. Free shipping. 30 days to decide. Limited editions. Free returns. Helion superfoam. Free exchange and returns.","th":["Performance / Technical fabric","Innovation / New technology"],"au":["Runners","Gym & strength training"],"pf":[],"ty":"Product"},{"b":"On","t":"On Official Store - Running Shoes for Men. Elevate your run with Swiss-engineered performance shoes. Unmatched on feeling and fun. Last season: save up to 40%.","th":["Performance / Technical fabric","Innovation / New technology","Price / Value"],"au":["Men","Runners"],"pf":["save up to 40%"],"ty":"Promotional"},{"b":"Alo Yoga","t":"ALO Official Site - Celeb-Favorite Trousers. Ultra-soft, breathable fabrics for full-length support and seamless hold. Go from studio to street.","th":["Comfort / Feel"],"au":["Women","Yoga & studio","Everyday / athleisure"],"pf":[],"ty":"Product"},{"b":"Alo Yoga","t":"ALO Official Site - Shop ALO Skirts. Celeb-approved tennis skirts, trending for playful, empowered energy. Go from studio to street. Rating 4.5 from 21,615 reviews. Order accuracy 95 to 100%.","th":["Style / Design","Versatility / Gym-to-street"],"au":["Women","Yoga & studio","Everyday / athleisure"],"pf":["4.5 rating from 21,615 reviews, Order accuracy 95 to 100%"],"ty":"Product"},{"b":"Alo Yoga","t":"From calm and cool to bold and bright, pick the hue that most matches your mood. Take your practice looks to the pavement with our staple pieces and transitional layers. Join ALO Access. Celeb-Approved. Yogi-Tested.","th":["Style / Design","Versatility / Gym-to-street","Community / Belonging"],"au":["Women","Yoga & studio","Everyday / athleisure"],"pf":[],"ty":"Brand"},{"b":"Alo Yoga","t":"Refresh your closet just in time for the new season. Go from studio to street with new leggings, jackets, bras and accessories from ALO. Performance-Engineered. ALO Yoga Workout. Free Worldwide Shipping. Yogi-Tested.","th":["Comfort / Feel","Style / Design","Versatility / Gym-to-street","Performance / Technical fabric"],"au":["Women","Yoga & studio","Everyday / athleisure"],"pf":[],"ty":"Product"},{"b":"Alo Yoga","t":"ALO Official Site. Go from studio to street with new leggings, jackets, bras and accessories from ALO. Ultra-soft fabrics and studio essentials that fit your body. ALO x Jisoo.","th":["Comfort / Feel","Versatility / Gym-to-street","Style / Design"],"au":["Women","Yoga & studio","Everyday / athleisure"],"pf":[],"ty":"Brand"},{"b":"Alo Yoga","t":"ALO Official Site - Bestselling Jackets and Coats - Free Shipping and Free Returns. Rating 4.5 from 21,615 reviews. Average delivery time 1 to 4 days. Men's Best Sellers: top-rated tees, shorts and joggers.","th":["Comfort / Feel","Versatility / Gym-to-street","Price / Value"],"au":["Women","Men","Yoga & studio","Everyday / athleisure"],"pf":["Rating 4.5 from 21,615 reviews, Average delivery time 1 to 4 days"],"ty":"Product"},{"b":"Under Armour","t":"50% Off UA - Semi-Annual Event. We Only Do This 2X A Year, You Can't Miss It. Use Code SUMMER Take Up To 50% Off, Just Twice A Year. Grab Fan Favorites At Great Prices.","th":["Price / Value"],"au":["Everyday / athleisure"],"pf":["50% Off, 2X A Year"],"ty":"Promotional"},{"b":"Under Armour","t":"Under Armour Official Site - Any Workout, Any Weather. Outerwear That Can Handle Anything. Any Sport, Any Condition. Shop UA Outerwear Today. Rating 4.8 from 305 reviews. 40% Off Winter Picks, No Code Needed.","th":["Performance / Technical fabric","Versatility / Gym-to-street","Style / Design","Price / Value"],"au":["Women","Men","Runners","Gym & strength training","Outdoor & hiking"],"pf":["Rating 4.8 from 305 reviews, 40% Off Winter Picks"],"ty":"Promotional"},{"b":"Under Armour","t":"Under Armour Golf Shirts - Shop UA Golf Shirts. Experience Superior Comfort and Durability. Get The Gear Everyone's After. New Styles Available.","th":["Performance / Technical fabric","Comfort / Feel"],"au":["Men"],"pf":[],"ty":"Product"},{"b":"Under Armour","t":"Under Armour Official Site - Shop The Official Site. Get The Gear Everyone's After. Shop Under Armour Workout Tees Today. Everything You Need. Nothing You Don't. Largest Style Selection. Pace Your Payments. Rating 4.8 from 221 reviews. Average delivery time 1 to 5 days.","th":["Style / Design","Versatility / Gym-to-street","Price / Value"],"au":["Women","Men","Gym & strength training","Everyday / athleisure"],"pf":["4.8 rating from 221 reviews, 1 to 5 days average delivery time"],"ty":"Product"},{"b":"Under Armour","t":"Start Strong, Get Stronger - UA MK-1 Collection. Grab Deals on Shoes, Shorts, Ts and More. No Code Needed At Checkout. US and CA Only.","th":["Performance / Technical fabric","Price / Value"],"au":["Gym & strength training","Everyday / athleisure"],"pf":[],"ty":"Promotional"},{"b":"Arc'teryx","t":"Outdoor Clothing, Technical Outerwear and Accessories - Arc'teryx United States. Arc'teryx is a high performance outdoor equipment company known for leading innovations in climbing, skiing and alpine technologies. Women's Collection. Men's Collection. Women's Jacket Finder.","th":["Performance / Technical fabric","Innovation / New technology"],"au":["Women","Men","Outdoor & hiking"],"pf":[],"ty":"Brand"},{"b":"Arc'teryx","t":"Arc'teryx Outerwear - Free shipping and free returns - Field-tested protection. In the mountains, having the right gear matters: shells, belay jackets, footwear and more. Hiking and trekking. Gifts For Him. Gifts For Her.","th":["Performance / Technical fabric"],"au":["Outdoor & hiking","Women","Men"],"pf":[],"ty":"Product"},{"b":"Arc'teryx","t":"High-performance gear. Stay on the move with packable layers and lightweight fabrics. Trail-ready gear combining packability and protection. High-Performance Apparel. Versatile Designs. Skiing and Snowboarding. Men's Climbing Clothes and Accessories.","th":["Performance / Technical fabric"],"au":["Outdoor & hiking"],"pf":[],"ty":"Brand"},{"b":"Arc'teryx","t":"All-Weather Essentials - Stay Comfortable All Day. Designed for mixed-weather, these durable pieces deliver all-day comfort and protection. Men's Best Sellers. Gore-tex Jackets. Insulated Jackets. New GORE-TEX ePE Membrane.","th":["Performance / Technical fabric","Comfort / Feel"],"au":["Men","Outdoor & hiking"],"pf":[],"ty":"Product"},{"b":"Arc'teryx","t":"Hiking and trekking - Sun protection collection 2026 - Multi-day comfort. Stay on the move with packable layers and lightweight fabrics. Trail-ready gear combining packability and protection. Best-In-Class Equipment.","th":["Performance / Technical fabric","Comfort / Feel","Versatility / Gym-to-street"],"au":["Outdoor & hiking"],"pf":[],"ty":"Product"},{"b":"Arc'teryx","t":"Shop Arc'teryx Nuclei - Made for Mountain Athletes. Durable, breathable weather protection, built for everything you don't plan. Skiing and Snowboarding. Women's Jacket Finder.","th":["Performance / Technical fabric","Comfort / Feel","Versatility / Gym-to-street"],"au":["Women","Outdoor & hiking"],"pf":[],"ty":"Product"},{"b":"Arc'teryx","t":"Arc'teryx Outerwear - Sun protection gear is here. Our lightweight layers are designed to keep you cool, covered, and protected from UV rays. Trail-ready gear.","th":["Performance / Technical fabric","Comfort / Feel"],"au":["Outdoor & hiking"],"pf":[],"ty":"Product"},{"b":"Arc'teryx","t":"Arc'teryx Men's Clothing - Hot-weather gear. Protect your skin with Arc'teryx men's sun protective clothing collection. Trail-ready gear combining packability and protection. High-Performance Apparel. Female-Specific Designs. Free Shipping and Returns. Versatile Designs. The Arc'teryx Guarantee.","th":["Performance / Technical fabric","Comfort / Feel","Versatility / Gym-to-street"],"au":["Men","Outdoor & hiking"],"pf":["The Arc'teryx Guarantee"],"ty":"Product"},{"b":"Fabletics","t":"First Scrub Set for $15 - Purple Scrub Sets In Stock. Our scrub sets are breathable, lightweight and wrinkle resistant. $15 for new Fabletics VIPs. Exclusive Access: New VIPs Get Your First Activewear Scrub Set for $15.","th":["Performance / Technical fabric","Comfort / Feel","Price / Value"],"au":["Everyday / athleisure"],"pf":["$15 price point"],"ty":"Promotional"}];
+(function(){
+  const THEMES=["Performance / Technical fabric","Comfort / Feel","Style / Design",
+    "Versatility / Gym-to-street","Sustainability","Price / Value",
+    "Innovation / New technology","Community / Belonging"];
+  const SHORT=["Performance","Comfort","Style","Versatility","Sustain.","Price","Innovation","Community"];
+  const BRANDS=[...new Set(ADS.map(a=>a.b))].sort((a,b)=>a.localeCompare(b));
+  const n=b=>ADS.filter(a=>a.b===b).length;
+  const hits=(b,t)=>ADS.filter(a=>a.b===b&&a.th.includes(t));
+  const pct=(b,t)=>Math.round(100*hits(b,t).length/n(b));
+  const catPct=t=>Math.round(100*ADS.filter(a=>a.th.includes(t)).length/ADS.length);
+
+  /* ---------- navigation ---------- */
+  const slides=[...document.querySelectorAll('.slide')];
+  let i=0;
+  const bar=document.getElementById('bar'),num=document.getElementById('num'),
+        grid=document.getElementById('grid');
+  function go(k){
+    i=Math.max(0,Math.min(slides.length-1,k));
+    slides.forEach((s,j)=>s.classList.toggle('on',j===i));
+    bar.style.width=((i+1)/slides.length*100)+'%';
+    num.textContent=(i+1)+' / '+slides.length;
+    if(i===3) drawCanvas();
+  }
+  document.addEventListener('keydown',e=>{
+    if(e.target && e.target.tagName==='INPUT'){ if(e.key==='Escape') e.target.blur(); return; }
+    if(e.key==='/'){ e.preventDefault();
+      const j=slides.findIndex(x=>x.dataset.t.indexOf('Whitespace')===0);
+      if(j>=0){ go(j); setTimeout(()=>document.getElementById('q').focus(),60); } return; }
+    if(e.key==='Escape'){grid.classList.toggle('on');return;}
+    if(grid.classList.contains('on')) return;
+    if(['ArrowRight','ArrowDown',' ','PageDown'].includes(e.key)){e.preventDefault();go(i+1);}
+    else if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){e.preventDefault();go(i-1);}
+    else if(e.key==='Home')go(0);
+    else if(e.key==='End')go(slides.length-1);
+    else if(e.key==='f'||e.key==='F'){
+      document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();
+    }
+  });
+  document.getElementById('gg').innerHTML=slides.map((s,j)=>
+    `<div class="gi" data-j="${j}"><b>${j+1}</b>${s.dataset.t}</div>`).join('');
+  document.getElementById('gg').addEventListener('click',e=>{
+    const g=e.target.closest('.gi'); if(!g)return;
+    grid.classList.remove('on'); go(+g.dataset.j);
+  });
+
+  /* ---------- matrix ---------- */
+  const step=v=>v===0?0:v<=20?1:v<=40?2:v<=60?3:v<=80?4:5;
+  let head='<thead><tr><th class="b">Brand</th>';
+  SHORT.forEach((s,k)=>head+=`<th${k===7?' class="ws"':''}>${s}</th>`);
+  head+='</tr></thead><tbody>';
+  BRANDS.forEach(b=>{
+    head+=`<tr><td class="b">${b} <span style="color:var(--grey);font-weight:400">${n(b)}</span></td>`;
+    THEMES.forEach((t,k)=>{
+      const v=pct(b,t), s=step(v);
+      const cls=v===0?(k===7?'z wsz':'z'):'k'+s;
+      head+=`<td class="${cls}" data-b="${b}" data-t="${t}">${v?v+'%':'&mdash;'}</td>`;
+    });
+    head+='</tr>';
+  });
+  head+='</tbody>';
+  const mx=document.getElementById('mx'); mx.innerHTML=head;
+  const side=document.getElementById('mside');
+  mx.addEventListener('click',e=>{
+    const td=e.target.closest('td'); if(!td||td.classList.contains('b'))return;
+    mx.querySelectorAll('td.sel').forEach(x=>x.classList.remove('sel'));
+    td.classList.add('sel');
+    const b=td.dataset.b,t=td.dataset.t,list=hits(b,t);
+    side.innerHTML=`<h3>${b} &middot; ${t}</h3>
+      <p class="hint">${list.length} of ${n(b)} ads (${pct(b,t)}%)</p>`+
+      (list.length?list.map(a=>`<div class="adcard">${a.t}
+        <div class="tags">${a.ty} &middot; ${a.th.join(' &middot; ')}</div></div>`).join('')
+       :`<div class="adcard" style="border-left-color:var(--grey)">
+          <b>No ads.</b> ${b} never makes this claim in the ${n(b)} ads we collected.</div>`);
+  });
+
+  /* ---------- canvas ---------- */
+  let focus=null;
+  const chips=document.getElementById('chips');
+  chips.innerHTML=`<button class="chip all on" data-b="">All twelve</button>`+
+    BRANDS.map(b=>`<button class="chip" data-b="${b}">${b}</button>`).join('');
+  chips.addEventListener('click',e=>{
+    const c=e.target.closest('.chip'); if(!c)return;
+    focus=c.dataset.b||null;
+    chips.querySelectorAll('.chip').forEach(x=>x.classList.toggle('on',x===c));
+    drawCanvas();
+  });
+  function drawCanvas(){
+    const W=1000,H=420,L=60,R=30,T=24,B=64,pw=W-L-R,ph=H-T-B;
+    const xs=THEMES.map((_,k)=>L+pw*k/(THEMES.length-1));
+    const y=v=>T+ph-ph*v/100;
+    const path=vals=>vals.map((v,k)=>(k?'L':'M')+xs[k].toFixed(1)+' '+y(v).toFixed(1)).join(' ');
+    let o='';
+    [0,25,50,75,100].forEach(g=>{
+      o+=`<line x1="${L}" x2="${W-R}" y1="${y(g)}" y2="${y(g)}" stroke="var(--line)" stroke-width="1"/>`;
+      o+=`<text x="${L-12}" y="${y(g)+5}" text-anchor="end" font-size="13" fill="var(--grey)"
+            font-family="var(--mono)">${g}%</text>`;
+    });
+    o+=`<rect x="${xs[7]-28}" y="${T}" width="56" height="${ph}" fill="var(--tint)"/>`;
+    BRANDS.forEach(b=>{
+      const vals=THEMES.map(t=>pct(b,t));
+      const on=!focus||focus===b;
+      o+=`<path d="${path(vals)}" fill="none" stroke="${on&&focus?'var(--sig)':'#B7C2CD'}"
+            stroke-width="${on&&focus?4:1.6}" opacity="${on?(focus?1:.62):.12}"
+            stroke-linejoin="round"/>`;
+    });
+    const cat=THEMES.map(t=>catPct(t));
+    o+=`<path d="${path(cat)}" fill="none" stroke="var(--ink)" stroke-width="3.5"
+          stroke-linejoin="round" opacity="${focus?.25:1}"/>`;
+    cat.forEach((v,k)=>o+=`<circle cx="${xs[k]}" cy="${y(v)}" r="5" fill="var(--ink)"
+          stroke="#fff" stroke-width="2" opacity="${focus?.25:1}"/>`);
+    if(focus){
+      const vals=THEMES.map(t=>pct(focus,t));
+      vals.forEach((v,k)=>o+=`<circle cx="${xs[k]}" cy="${y(v)}" r="5.5" fill="var(--sig)"
+            stroke="#fff" stroke-width="2"/>`);
+      o+=`<text x="${xs[0]+8}" y="${y(vals[0])-16}" font-size="16" font-weight="700"
+            fill="var(--sig)">${focus}</text>`;
+    } else {
+      o+=`<text x="${xs[0]+8}" y="${y(cat[0])-16}" font-size="15" font-weight="700"
+            fill="var(--ink)">Category average</text>`;
+    }
+    SHORT.forEach((s,k)=>{
+      const an=k===0?'start':k===SHORT.length-1?'end':'middle';
+      o+=`<text x="${xs[k]+(k===0?-4:k===7?4:0)}" y="${H-B+26}" text-anchor="${an}"
+            font-size="14" fill="${k===7?'var(--sig)':'var(--mid)'}"
+            font-weight="${k===7?700:400}">${s}</text>`;
+    });
+    document.getElementById('cv').innerHTML=o;
+  }
+
+  /* ---------- proof ---------- */
+  const proofOf=b=>{const s=new Set();ADS.filter(a=>a.b===b).forEach(a=>a.pf.forEach(p=>p&&s.add(p)));return [...s];};
+  const withProof=b=>ADS.filter(a=>a.b===b&&a.pf.length&&a.pf[0]).length;
+  const plist=document.getElementById('plist'),pdet=document.getElementById('pdetail');
+  const ranked=[...BRANDS].sort((a,b)=>withProof(b)/n(b)-withProof(a)/n(a));
+  plist.innerHTML=ranked.map(b=>{
+    const w=withProof(b),p=Math.round(100*w/n(b));
+    return `<div class="prow${p===0?' none':''}" data-b="${b}"><span>${b}</span>
+      <span class="v">${w}/${n(b)} &middot; ${p}%</span></div>`;
+  }).join('');
+  plist.addEventListener('click',e=>{
+    const r=e.target.closest('.prow'); if(!r)return;
+    plist.querySelectorAll('.prow').forEach(x=>x.classList.remove('on'));
+    r.classList.add('on');
+    const b=r.dataset.b,pf=proofOf(b),w=withProof(b);
+    pdet.innerHTML=`<h3 style="font-family:var(--body);font-size:1em">${b}</h3>
+      <p class="hint" style="color:var(--grey);font-size:.8em;margin:.3em 0 .9em">
+        ${w} of ${n(b)} ads cite something. ${n(b)-w} cite nothing.</p>`+
+      (pf.length?pf.map(p=>`<div class="adcard">${p}</div>`).join('')
+       :`<div class="adcard" style="border-left-color:var(--grey)">
+          <b>Nothing at all.</b> No rating, guarantee, statistic or offer in any of the ${n(b)} ads.</div>`);
+  });
+
+
+  /* ---------- whitespace finder ---------- */
+  const SUGG=["community","guarantee","sustainable","recycled","women","men","runners",
+              "20% off","free shipping","reviews","coach","member","durable","premium"];
+  const qEl=document.getElementById("q"), sYes=document.getElementById("s-yes"),
+        sNo=document.getElementById("s-no"), sHits=document.getElementById("s-hits"),
+        sVer=document.getElementById("s-verdict");
+  document.getElementById("sugg").innerHTML=SUGG.map(t=>`<button data-q="${t}">${t}</button>`).join("");
+  document.getElementById("sugg").addEventListener("click",e=>{
+    const b=e.target.closest("button"); if(!b)return;
+    qEl.value=b.dataset.q; runSearch();
+  });
+  function esc(t){return t.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));}
+  function runSearch(){
+    const q=(qEl.value||"").trim().toLowerCase();
+    if(!q){ sYes.innerHTML=sNo.innerHTML=sHits.innerHTML=""; 
+            sVer.innerHTML='<span style="color:var(--grey);font-weight:400">'+
+            'Type a word or phrase. Anything no brand says is open ground.</span>'; return; }
+    const per={}; BRANDS.forEach(b=>per[b]=0);
+    const hits=[];
+    ADS.forEach(a=>{ if(a.t.toLowerCase().includes(q)){ per[a.b]++; hits.push(a); } });
+    const yes=BRANDS.filter(b=>per[b]>0), no=BRANDS.filter(b=>per[b]===0);
+    sYes.innerHTML = yes.length
+      ? yes.sort((a,b)=>per[b]/n(b)-per[a]/n(a)).map(b=>
+          `<div class="bline"><span>${b}</span><span class="c">${per[b]}/${n(b)} · ${Math.round(100*per[b]/n(b))}%</span></div>`).join("")
+      : '<div class="bline" style="border:0;color:var(--sig);font-weight:650">Nobody. Completely open.</div>';
+    sNo.innerHTML = no.map(b=>`<div class="bline"><span>${b}</span><span class="c">0</span></div>`).join("")
+      || '<div class="bline" style="border:0">Every brand says it.</div>';
+    sHits.innerHTML = hits.slice(0,40).map(a=>{
+      const i=a.t.toLowerCase().indexOf(q);
+      const txt=esc(a.t.slice(0,i))+"<b>"+esc(a.t.slice(i,i+q.length))+"</b>"+esc(a.t.slice(i+q.length));
+      return `<div class="shit"><span class="who">${a.b}</span>${txt}</div>`;
+    }).join("") || '<div class="shit" style="border-left-color:var(--grey)">No ad in the set contains this.</div>';
+    const pctAds=Math.round(100*hits.length/ADS.length);
+    sVer.innerHTML = hits.length
+      ? `<em>${hits.length}</em> of 101 ads (${pctAds}%) &middot; <em>${yes.length}</em> of 12 brands say it &middot; <em>${no.length}</em> do not.`
+      : `<em>Nothing in 101 ads.</em> No brand in this category is saying it.`;
+  }
+  qEl.addEventListener("input",runSearch);
+  runSearch();
+
+  document.getElementById('nx').addEventListener('click',e=>{e.stopPropagation();go(i+1);});
+  document.getElementById('pv').addEventListener('click',e=>{e.stopPropagation();go(i-1);});
+  document.getElementById('mp').addEventListener('click',e=>{e.stopPropagation();grid.classList.toggle('on');});
+  grid.addEventListener('click',e=>{if(e.target===grid)grid.classList.remove('on');});
+
+  // Click the slide to advance. Interactive regions are excluded so clicking a
+  // matrix cell, a brand chip or a proof row never skips the slide.
+  const SAFE='#mx,#mside,#chips,#cv,#plist,#pdetail,#ctl,#grid,.sbox,.sugg,.sres,input,a,button';
+  document.addEventListener('click',e=>{
+    if(grid.classList.contains('on'))return;
+    if(e.target.closest(SAFE))return;
+    go(i+1);
+  });
+
+  go(0);
+})();
+</script>

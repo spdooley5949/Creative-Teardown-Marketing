@@ -1,0 +1,484 @@
+<title>Creative Teardown — Findings for Review</title>
+<style>
+  :root {
+    color-scheme: light;
+    --surface: #FAFAFB;
+    --raised: #FFFFFF;
+    --sunken: #F1F3F6;
+    --ink: #12151A;
+    --ink-2: #565C66;
+    --ink-3: #8A919C;
+    --rule: #E4E6EB;
+    --rule-strong: #CBD1DA;
+    --accent: #2a78d6;
+    --accent-soft: #E8F0FB;
+    --signal: #C24A1D;
+    --signal-soft: #FBEBE3;
+    --line-muted: #B9C0CB;
+    --s1: #EDF3FC; --s2: #CFE0F6; --s3: #9CC1EC; --s4: #5E98DD; --s5: #2a78d6;
+    --on-deep: #FFFFFF;
+    --shadow: 0 1px 2px rgba(18,21,26,.06), 0 8px 24px rgba(18,21,26,.05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --surface: #0E1116;
+      --raised: #161A21;
+      --sunken: #1B2028;
+      --ink: #F1F3F6;
+      --ink-2: #A6AEBA;
+      --ink-3: #6C7482;
+      --rule: #232832;
+      --rule-strong: #39414E;
+      --accent: #3987e5;
+      --accent-soft: #16243A;
+      --signal: #E0703F;
+      --signal-soft: #2E1B12;
+      --line-muted: #49515F;
+      --s1: #16222F; --s2: #1E3550; --s3: #2A4E78; --s4: #2F6CB4; --s5: #3987e5;
+      --on-deep: #FFFFFF;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.3);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --surface: #0E1116;
+    --raised: #161A21;
+    --sunken: #1B2028;
+    --ink: #F1F3F6;
+    --ink-2: #A6AEBA;
+    --ink-3: #6C7482;
+    --rule: #232832;
+    --rule-strong: #39414E;
+    --accent: #3987e5;
+    --accent-soft: #16243A;
+    --signal: #E0703F;
+    --signal-soft: #2E1B12;
+    --line-muted: #49515F;
+    --s1: #16222F; --s2: #1E3550; --s3: #2A4E78; --s4: #2F6CB4; --s5: #3987e5;
+    --on-deep: #FFFFFF;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.3);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--surface);
+    color: var(--ink);
+    font: 400 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 0 28px 96px; }
+  .prose { max-width: 66ch; }
+
+  h1, h2, h3 { font-family: Georgia, "Iowan Old Style", "Times New Roman", serif; font-weight: 600; text-wrap: balance; margin: 0; }
+  h1 { font-size: clamp(30px, 4.4vw, 46px); line-height: 1.12; letter-spacing: -.012em; }
+  h2 { font-size: clamp(22px, 2.6vw, 28px); line-height: 1.22; letter-spacing: -.008em; }
+  h3 { font-size: 17px; line-height: 1.35; }
+  p { margin: 0; }
+
+  .eyebrow {
+    font-size: 11px; font-weight: 650; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--ink-3); margin: 0;
+  }
+
+  header.masthead { border-bottom: 1px solid var(--rule); background: var(--raised); }
+  .masthead .wrap { padding-top: 34px; padding-bottom: 34px; display: flex; flex-direction: column; gap: 18px; }
+  .kicker { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .tag {
+    font-size: 11px; font-weight: 650; letter-spacing: .06em; text-transform: uppercase;
+    padding: 4px 9px; border-radius: 3px; border: 1px solid var(--rule-strong); color: var(--ink-2);
+  }
+  .tag.live { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+  .masthead .sub { color: var(--ink-2); font-size: 17px; max-width: 62ch; }
+
+  section { padding-top: 56px; }
+  section + section { border-top: 1px solid var(--rule); margin-top: 56px; padding-top: 44px; }
+  .sec-head { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+
+  .lede {
+    font-family: Georgia, "Iowan Old Style", serif;
+    font-size: clamp(19px, 2.1vw, 23px); line-height: 1.45; letter-spacing: -.004em;
+  }
+  .lede b { font-weight: 600; color: var(--accent); }
+
+  .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(168px, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; margin-top: 28px; }
+  .stat { background: var(--raised); padding: 18px 18px 16px; display: flex; flex-direction: column; gap: 5px; }
+  .stat .n { font: 600 30px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+  .stat .n.hi { color: var(--signal); }
+  .stat .l { font-size: 12.5px; color: var(--ink-2); line-height: 1.35; }
+
+  .bleed { margin-top: 30px; }
+  .scroller { overflow-x: auto; border: 1px solid var(--rule); border-radius: 4px; background: var(--raised); }
+
+  figure { margin: 0; }
+  figcaption { font-size: 13px; color: var(--ink-2); margin-top: 12px; max-width: 70ch; }
+
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+  th, td { padding: 9px 11px; text-align: right; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+  th { font-size: 11px; font-weight: 650; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); vertical-align: bottom; background: var(--raised); position: sticky; top: 0; }
+  th.brand, td.brand { text-align: left; font-weight: 600; position: sticky; left: 0; background: var(--raised); z-index: 1; }
+  th.brand { z-index: 2; }
+  td.num { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-variant-numeric: tabular-nums; }
+  tr:last-child td { border-bottom: 0; }
+  tfoot td { font-weight: 700; border-top: 2px solid var(--rule-strong); background: var(--sunken); }
+  tfoot td.brand { background: var(--sunken); }
+  .ws-col { background: var(--signal-soft); }
+  th.ws-col { color: var(--signal); }
+
+  .cell-1 { background: var(--s1); }
+  .cell-2 { background: var(--s2); }
+  .cell-3 { background: var(--s3); }
+  .cell-4 { background: var(--s4); color: var(--on-deep); }
+  .cell-5 { background: var(--s5); color: var(--on-deep); }
+  .cell-0 { color: var(--ink-3); }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(268px, 1fr)); gap: 14px; margin-top: 26px; }
+  .card { background: var(--raised); border: 1px solid var(--rule); border-radius: 4px; padding: 16px 17px; display: flex; flex-direction: column; gap: 8px; }
+  .card h3 { font-family: inherit; font-weight: 650; font-size: 14.5px; letter-spacing: -.002em; }
+  .card .pos { font-size: 13.5px; color: var(--ink-2); line-height: 1.5; }
+  .card .proof { font-size: 12.5px; color: var(--ink-3); border-top: 1px solid var(--rule); padding-top: 8px; line-height: 1.45; }
+  .card .proof b { color: var(--ink-2); font-weight: 600; }
+  .card.gap { border-color: var(--signal); }
+  .card.gap .proof b { color: var(--signal); }
+
+  ol.recs { margin: 26px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; }
+  ol.recs li { background: var(--raised); padding: 18px 20px; display: grid; grid-template-columns: 26px 1fr; gap: 14px; }
+  ol.recs .mark { font: 600 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--accent); }
+  ol.recs .what { font-weight: 600; font-size: 15px; line-height: 1.45; }
+  ol.recs .why { font-size: 13.5px; color: var(--ink-2); margin-top: 6px; line-height: 1.55; }
+
+  .limits { background: var(--sunken); border: 1px solid var(--rule); border-radius: 4px; padding: 20px 22px; margin-top: 26px; display: flex; flex-direction: column; gap: 13px; }
+  .limits .row { display: grid; grid-template-columns: 132px 1fr; gap: 14px; font-size: 13.5px; line-height: 1.5; }
+  .limits .k { font-weight: 650; color: var(--ink); }
+  .limits .v { color: var(--ink-2); }
+  @media (max-width: 620px) { .limits .row { grid-template-columns: 1fr; gap: 3px; } }
+
+  .asks { margin: 26px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 12px; }
+  .asks li { background: var(--raised); border: 1px solid var(--rule); border-left: 3px solid var(--accent); border-radius: 3px; padding: 15px 17px; }
+  .asks .who { font-size: 11px; font-weight: 650; letter-spacing: .07em; text-transform: uppercase; color: var(--accent); }
+  .asks .q { font-size: 14.5px; line-height: 1.5; margin-top: 5px; }
+
+  a { color: var(--accent); text-underline-offset: 2px; }
+  a:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+
+  footer.foot { border-top: 1px solid var(--rule); margin-top: 60px; padding-top: 22px; font-size: 12.5px; color: var(--ink-3); line-height: 1.6; }
+
+  #tip {
+    position: fixed; pointer-events: none; opacity: 0; transition: opacity .1s;
+    background: var(--raised); border: 1px solid var(--rule-strong); border-radius: 4px;
+    box-shadow: var(--shadow); padding: 9px 11px; font-size: 12.5px; z-index: 40; max-width: 230px;
+  }
+  #tip .t { font-weight: 650; margin-bottom: 3px; }
+  #tip .v { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-variant-numeric: tabular-nums; color: var(--ink-2); }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="kicker">
+      <span class="tag live">For review</span>
+      <span class="tag">12 brands</span>
+      <span class="tag">101 text ads</span>
+      <span class="tag">Listed 12 Aug 2026</span>
+      <span class="tag">+ 1,786-ad replication set</span>
+      <span class="tag">Tags human-audited</span>
+    </div>
+    <h1>What twelve fitness apparel brands are actually saying in Google search</h1>
+    <p class="sub">A messaging teardown of competitor search ads, built to find the claim nobody is making. Read it, then tell me where I am wrong.</p>
+  </div>
+</header>
+
+<div class="wrap">
+
+<section id="finding">
+  <div class="sec-head">
+    <p class="eyebrow">The finding</p>
+    <h2>The category has run out of ways to say &ldquo;comfortable.&rdquo;</h2>
+  </div>
+  <p class="lede prose">Every brand in the set is selling some blend of performance, comfort and versatility, and almost none are backing it with hard evidence. The category's discipline gap is <b>proof, not positioning</b> — with community and sustainability the least-defended themes.</p>
+
+  <div class="stat-row">
+    <div class="stat"><span class="n">59%</span><span class="l">of ads claim technical performance, across all 12 brands</span></div>
+    <div class="stat"><span class="n hi">6%</span><span class="l">claim community or belonging &mdash; 6 ads, 5 of them Gymshark&rsquo;s</span></div>
+    <div class="stat"><span class="n hi">67%</span><span class="l">of ads carry no hard evidence: no rating, count, price or guarantee</span></div>
+    <div class="stat"><span class="n">16%</span><span class="l">of search ads are brand-level; the rest is product feed and discounts</span></div>
+  </div>
+</section>
+
+<section id="canvas">
+  <div class="sec-head">
+    <p class="eyebrow">Evidence — strategy canvas</p>
+    <h2>Twelve brands, one shape</h2>
+  </div>
+  <p class="prose">Each faint line is one brand's claim profile. They rise and fall together, which is the finding: paid search copy in this category has converged. The bold line is the category average. Where it collapses on the right is open ground.</p>
+  <figure class="bleed">
+    <div class="scroller"><div id="canvas-chart" style="min-width:720px"></div></div>
+    <figcaption>Percent of each brand's sampled ads using each claim theme. An ad can carry more than one theme, so rows do not total 100%.</figcaption>
+  </figure>
+</section>
+
+<section id="matrix">
+  <div class="sec-head">
+    <p class="eyebrow">Evidence — messaging matrix</p>
+    <h2>The same table, brand by brand</h2>
+  </div>
+  <p class="prose">Cells are the percent of that brand's ads using each theme, not raw counts, so brands sampled at different depths stay comparable. The <b>Ads</b> column is the denominator. Darker means the brand leans harder on that claim.</p>
+  <figure class="bleed">
+    <div class="scroller"><table id="matrix-table"></table></div>
+    <figcaption>Community and Belonging, marked in orange, is still the emptiest column after a row-by-row human audit of every tag. Ten of twelve brands never mention it; Gymshark carries it in half its ads.</figcaption>
+  </figure>
+</section>
+
+
+<section id="corroboration">
+  <div class="sec-head">
+    <p class="eyebrow">Corroboration &mdash; a second, independent dataset</p>
+    <h2>The finding replicates on data we did not collect</h2>
+  </div>
+  <p class="prose">A teammate contributed <b>1,786 ads across eight brands, dated 2021 to 2026</b>, gathered a completely different way: a year-stratified harvest with text pulled by OCR rather than transcribed by hand. Four brands appear in both datasets. Neither collector saw the other&rsquo;s work, which makes the overlap a genuine replication test.</p>
+  <figure class="bleed">
+    <div class="scroller"><table id="xval-table"></table></div>
+    <figcaption>Mean absolute gap across all eight claim themes, comparing each brand&rsquo;s profile in the hand-collected set against the harvested set. Larger gaps sit in Comfort and Style, where the manual sample is smallest.</figcaption>
+  </figure>
+  <div class="stat-row">
+    <div class="stat"><span class="n">8</span><span class="l">point mean gap across every overlapping brand and theme</span></div>
+    <div class="stat"><span class="n hi">0&ndash;4</span><span class="l">point gap on community &mdash; the finding everything rests on</span></div>
+    <div class="stat"><span class="n">5 of 6</span><span class="l">years where community stays at or below 5% in the second set</span></div>
+    <div class="stat"><span class="n">8</span><span class="l">brands in the second set, four of them ones we never touched</span></div>
+  </div>
+  <p class="prose" style="margin-top:26px">Different collector, different method, different brands, different years. Same answer. The gap is not an artifact of who gathered the ads or when.</p>
+  <p class="prose" style="margin-top:14px"><b>What this does not support:</b> the second dataset is year-stratified, so its brand mix swings hard between years &mdash; 2021 is 86% Adidas and Puma. Any year-over-year trend drawn from it would be measuring sample composition, not category behaviour. No trend is claimed here.</p>
+</section>
+
+<section id="mix">
+  <div class="sec-head">
+    <p class="eyebrow">Method — what we are actually reading</p>
+    <h2>Only a sixth of these ads are about the brand</h2>
+  </div>
+  <p class="prose">Search results are dominated by product-feed and discount ads, which say nothing about how a brand positions itself. Every ad here is classified so the analysis can be run on brand-level copy alone. This is the honest boundary of what the finding covers.</p>
+  <figure class="bleed">
+    <div id="mix-chart"></div>
+    <figcaption>"Golf Gloves and Mitts. Nike.com" is a product listing, not a positioning statement. Treat this as a teardown of search messaging, not of brand strategy.</figcaption>
+  </figure>
+</section>
+
+<section id="brands">
+  <div class="sec-head">
+    <p class="eyebrow">Evidence — positioning</p>
+    <h2>How each brand reads</h2>
+  </div>
+  <p class="prose">One line on what each brand is selling, and the strongest piece of evidence it puts in front of a buyer. Cards outlined in orange have a proof problem.</p>
+  <div class="cards" id="brand-cards"></div>
+</section>
+
+<section id="recs">
+  <div class="sec-head">
+    <p class="eyebrow">Recommendation</p>
+    <h2>Where to play</h2>
+  </div>
+  <ol class="recs">
+    <li><span class="mark">01</span><div><div class="what">Replace generic comfort and performance adjectives with one quantified proof per hero product, and lead the ad with it.</div><div class="why">Every brand claims technical performance and 67% of ads attach no hard evidence at all. Where proof exists it is almost entirely star ratings and offer terms. A number — grams saved, energy return, wash cycles held — is instantly differentiating in an auction where every competing headline sounds the same.</div></div></li>
+    <li><span class="mark">02</span><div><div class="what">Claim community and belonging as owned territory, with a named program and published participation data.</div><div class="why">Six ads across two brands, five of them Gymshark's coached programmes. The territory is not empty, it is uncontested: ten brands have ceded belonging to one competitor, and even Gymshark publishes no participation numbers. A measurable programme beats an unproven claim.</div></div></li>
+    <li><span class="mark">03</span><div><div class="what">Stop bidding into the versatility and comfort keywords where lululemon, Vuori and Fabletics are stacked.</div><div class="why">Everyday athleisure and versatility are the most saturated intersections in the data, which means the highest bid pressure. Size-inclusive (one ad, Fabletics) and yoga or studio (two ads) are materially cheaper ground.</div></div></li>
+    <li><span class="mark">04</span><div><div class="what">Audit low-volume review proof before scaling it.</div><div class="why">Tracksmith advertises on 22 reviews and Arc'teryx's store rating is 4.0 from 24, while Vuori runs 13,593 and Alo 21,615. If ratings are the category's default proof, volume and score are competitive assets, not hygiene.</div></div></li>
+  </ol>
+</section>
+
+<section id="limits">
+  <div class="sec-head">
+    <p class="eyebrow">Method — read this before quoting any number</p>
+    <h2>What this analysis cannot tell you</h2>
+  </div>
+  <div class="limits">
+    <div class="row"><div class="k">Two datasets</div><div class="v">The 101-ad primary set was transcribed by hand. The 1,786-ad replication set was harvested with tooling and OCR by a teammate. Different provenance, so the second is used as corroboration rather than primary evidence. Do not describe the project as entirely hand-collected.</div></div>
+    <div class="row"><div class="k">No trend claims</div><div class="v">The replication set carries real dates but is year-stratified, so its brand mix changes sharply year to year. Nothing here claims a year-over-year trend.</div></div>
+    <div class="row"><div class="k">Source</div><div class="v">Google Ads Transparency Center only. Public, no login. No Meta, TikTok, LinkedIn or organic.</div></div>
+    <div class="row"><div class="k">&ldquo;Listed,&rdquo; not &ldquo;live&rdquo;</div><div class="v">Filters applied were US region, text format and advertiser domain. The date filter was left on &ldquo;Any time&rdquo; and individual ads were not opened to check run dates. This is every text ad the Transparency Center listed for these advertisers on 12 August, not a verified set of ads running that moment. It does not change any finding, but &ldquo;live&rdquo; would overstate it.</div></div>
+    <div class="row"><div class="k">Format</div><div class="v">Text ads only. Most spend in this category is video and image creative, which carries no copy to analyze. This is a search messaging teardown, not a brand strategy audit.</div></div>
+    <div class="row"><div class="k">Sample</div><div class="v">101 ads. Depth is uneven by design: lululemon 18, Arc'teryx and On 12, down to 3 for Patagonia, which genuinely runs few search text ads. Cells are percentages so the comparison holds, but a 3-ad brand still carries a wide error bar.</div></div>
+    <div class="row"><div class="k">Dates</div><div class="v">The first-seen column is the collection date, not the true first-seen date. Do not cite it.</div></div>
+    <div class="row"><div class="k">Tagging</div><div class="v">Claude tagged every ad, then the tags were frozen to a committed file so the numbers reproduce exactly between runs. No human has reviewed the tags yet. That is the ask below.</div>
+    <div class="row"><div class="k">Revision</div><div class="v">An earlier version of this page, built on 42 ads, claimed Vuori, Gymshark and lululemon cited no proof. That was a sampling artifact and is corrected here. All twelve brands cite proof somewhere.</div></div></div>
+  </div>
+</section>
+
+<section id="feedback">
+  <div class="sec-head">
+    <p class="eyebrow">What I need from you</p>
+    <h2>Four questions, and where to answer them</h2>
+  </div>
+  <p class="prose">Reply in the thread on <a href="https://github.com/spdooley5949/Creative-Teardown-Marketing/issues/1">issue #1</a>. Be specific enough that I can act on it — name the brand, the ad, or the number you disagree with.</p>
+  <ul class="asks">
+    <li><span class="who">Jess — tagging</span><div class="q">Done, and it mattered: your audit found 42 errors including two in the headline count, and every correction is now applied to the frozen tags. One open judgment you flagged is recorded in the README: loyalty perks (UA Rewards, Nike Member) are ruled not-community; coached programmes are. Say so if you disagree.</div></li>
+    <li><span class="who">William — scope</span><div class="q">Are these the right twelve brands and the right eight themes? If a theme is missing that you would expect a marketer to track, name it now rather than Friday.</div></li>
+    <li><span class="who">Jesse — the pitch</span><div class="q">Does the community recommendation survive a hostile question? Gymshark already runs couch-to-5K and half-marathon coaching, so "nobody does community" is not the argument. The argument is that nobody publishes participation numbers. Can you defend that distinction on your feet?</div></li>
+    <li><span class="who">Andrew and Catherine — depth</span><div class="q">Andrew, your 1,786-ad set is merged and it is what makes the replication section above possible. The remaining gap: only four of sixteen brands appear in both datasets. Hand-collecting Adidas, Puma, Skechers and Anta the way the primary set was built would double that and make the replication much harder to attack. Catherine, the four thin brands still need confirming: Patagonia (3 ads), Tracksmith, New Balance and Fabletics.</div></li>
+  </ul>
+</section>
+
+<footer class="foot">
+  Built from live Google Ads Transparency Center data collected 12 August 2026. Source data, tagging and the full workbook live in
+  <a href="https://github.com/spdooley5949/Creative-Teardown-Marketing">spdooley5949/Creative-Teardown-Marketing</a>.
+  Numbers on this page are generated from the same frozen tag file as the Excel deliverable and reconcile against it exactly.
+</footer>
+
+</div>
+<div id="tip" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  var THEMES = ["Performance","Comfort","Style","Versatility","Sustainability","Price / Value","Innovation","Community"];
+  var FULL = ["Performance / Technical fabric","Comfort / Feel","Style / Design","Versatility / Gym-to-street","Sustainability","Price / Value","Innovation / New technology","Community / Belonging"];
+  var CATEGORY = [59,58,36,51,7,34,14,6];
+  var BRANDS = [
+    {n:"Alo Yoga",    ads:9,  v:[22,67,56,67,0,11,0,11],   pos:"Studio-to-street style with a fashion, celebrity-adjacent sensibility, plus the ALO Access membership.", proof:"4.5 from 21,615 reviews, 95-100% order accuracy, ALO Access.", gap:false},
+    {n:"Arc'teryx",   ads:12, v:[92,50,0,33,8,0,17,0],     pos:"Uncompromising technical outerwear for the mountains, sold on fabric science.", proof:"The Arc'teryx Guarantee, GORE-TEX ePE. Store rating only 4.0 from 24.", gap:true},
+    {n:"Fabletics",   ads:4,  v:[50,100,50,50,0,100,0,0],  pos:"The value play: every ad carries an offer, with VIP membership pricing as the hook.", proof:"$15 first scrub set, $19 swimsuits, 80% off for new VIPs.", gap:false},
+    {n:"Gymshark",    ads:10, v:[50,30,40,60,0,40,10,50],  pos:"The gym is the identity, and belonging is now half its message: coached couch-to-5K and half-marathon programmes, not just tone.", proof:"4.6 from 200 reviews plus real coached programmes, but no participation numbers.", gap:false},
+    {n:"New Balance", ads:4,  v:[50,75,50,50,0,25,0,0],    pos:"Comfortable, well-made everyday footwear with heritage credibility.", proof:"Established in 1906, extended widths, up to 30% off.", gap:false},
+    {n:"Nike",        ads:8,  v:[75,50,50,38,0,12,0,0],    pos:"The default everything store: performance and comfort across every sport.", proof:"4.7 from 6,660 and 4.6 from 1,919 reviews, 1-3 day delivery.", gap:false},
+    {n:"On",          ads:12, v:[83,67,8,33,8,25,67,0],    pos:"Swiss-engineered running innovation, extending into all-day wear and refurbished gear.", proof:"4.6 ratings, 30-day returns, Cyclon resale, named tech (LightSpray, Helion).", gap:false},
+    {n:"Patagonia",   ads:3,  v:[33,0,0,33,33,33,0,0],     pos:"Buy once, keep it for years. Durability and planet as the value proposition.", proof:"Guaranteed quality and profits to the planet. Only 3 search text ads running.", gap:false},
+    {n:"Tracksmith",  ads:4,  v:[100,25,25,0,0,75,0,0],    pos:"Craft running apparel for serious runners, anchored in Boston heritage — individual excellence, not belonging.", proof:"5.0 from just 22 reviews. Thinnest evidence base in the set.", gap:true},
+    {n:"Under Armour",ads:7,  v:[71,43,43,29,0,86,14,0],   pos:"Cushioning technology sold at a permanent discount: price language in 86% of its ads.", proof:"4.8 from 305 and 221 reviews, but 50% off sitewide does the persuading.", gap:false},
+    {n:"Vuori",       ads:10, v:[60,80,80,90,0,50,10,0],   pos:"Performance apparel restyled for life, acquired through a standing 20%-off signup offer.", proof:"4.6 from 13,593 reviews and a 100% product guarantee, 120-day returns.", gap:false},
+    {n:"lululemon",   ads:18, v:[33,72,33,72,22,28,6,0],   pos:"One garment for every part of the day, plus a full resale business under Like New.", proof:"Three ratings (4.7/185, 4.7/183, 4.6/104) and the Like New programme.", gap:false}
+  ];
+
+  var tip = document.getElementById("tip");
+  function showTip(e, title, val) {
+    tip.innerHTML = '<div class="t"></div><div class="v"></div>';
+    tip.querySelector(".t").textContent = title;
+    tip.querySelector(".v").textContent = val;
+    tip.style.opacity = 1;
+    var x = e.clientX + 14, y = e.clientY + 14;
+    if (x + 240 > window.innerWidth) x = e.clientX - 240;
+    if (y + 80 > window.innerHeight) y = e.clientY - 80;
+    tip.style.left = x + "px"; tip.style.top = y + "px";
+  }
+  function hideTip() { tip.style.opacity = 0; }
+
+  // ---- Strategy canvas -----------------------------------------------------
+  var W = 860, H = 380, L = 54, R = 22, T = 26, B = 74;
+  var pw = W - L - R, ph = H - T - B;
+  var xs = THEMES.map(function (_, i) { return L + (pw * i) / (THEMES.length - 1); });
+  function y(v) { return T + ph - (ph * v) / 100; }
+  function path(vals) { return vals.map(function (v, i) { return (i ? "L" : "M") + xs[i].toFixed(1) + " " + y(v).toFixed(1); }).join(" "); }
+
+  var svg = ['<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" role="img" aria-label="Strategy canvas: twelve brands rise and fall on the same claim themes, collapsing at community.">'];
+  [0, 25, 50, 75, 100].forEach(function (g) {
+    svg.push('<line x1="' + L + '" x2="' + (W - R) + '" y1="' + y(g) + '" y2="' + y(g) + '" stroke="var(--rule)" stroke-width="1"/>');
+    svg.push('<text x="' + (L - 10) + '" y="' + (y(g) + 4) + '" text-anchor="end" font-size="11" fill="var(--ink-3)" font-family="ui-monospace,Menlo,monospace">' + g + '%</text>');
+  });
+  svg.push('<rect x="' + (xs[7] - 26) + '" y="' + T + '" width="48" height="' + ph + '" fill="var(--signal-soft)"/>');
+  BRANDS.forEach(function (b) {
+    svg.push('<path d="' + path(b.v) + '" fill="none" stroke="var(--line-muted)" stroke-width="1.5" stroke-linejoin="round" opacity=".75"/>');
+  });
+  svg.push('<path d="' + path(CATEGORY) + '" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>');
+  CATEGORY.forEach(function (v, i) {
+    svg.push('<circle cx="' + xs[i] + '" cy="' + y(v) + '" r="4.5" fill="var(--accent)" stroke="var(--raised)" stroke-width="2"/>');
+  });
+  svg.push('<text x="' + (xs[0] + 8) + '" y="' + (y(CATEGORY[0]) - 14) + '" font-size="12" font-weight="650" fill="var(--accent)">Category average</text>');
+  svg.push('<text x="' + (xs[7] - 4) + '" y="' + (y(CATEGORY[7]) - 16) + '" text-anchor="end" font-size="12" font-weight="650" fill="var(--signal)">Open ground</text>');
+  THEMES.forEach(function (t, i) {
+    var anchor = i === 0 ? "start" : i === THEMES.length - 1 ? "end" : "middle";
+    var dx = i === 0 ? -6 : i === THEMES.length - 1 ? 6 : 0;
+    svg.push('<text x="' + (xs[i] + dx) + '" y="' + (H - B + 22) + '" text-anchor="' + anchor + '" font-size="11.5" fill="var(--ink-2)">' + t + '</text>');
+  });
+  xs.forEach(function (x, i) {
+    svg.push('<rect class="hit" data-i="' + i + '" x="' + (x - 24) + '" y="' + T + '" width="48" height="' + ph + '" fill="transparent" tabindex="0"/>');
+  });
+  svg.push("</svg>");
+  var host = document.getElementById("canvas-chart");
+  host.innerHTML = svg.join("");
+  host.querySelectorAll(".hit").forEach(function (r) {
+    function on(e) {
+      var i = +r.dataset.i;
+      var users = BRANDS.filter(function (b) { return b.v[i] > 0; }).length;
+      showTip(e, FULL[i], CATEGORY[i] + "% of all ads  ·  " + users + " of 12 brands");
+    }
+    r.addEventListener("mousemove", on);
+    r.addEventListener("mouseleave", hideTip);
+    r.addEventListener("focus", function (e) {
+      var b = r.getBoundingClientRect();
+      on({ clientX: b.left + b.width / 2, clientY: b.top + 40 });
+    });
+    r.addEventListener("blur", hideTip);
+  });
+
+  // ---- Matrix table --------------------------------------------------------
+  function step(v) { return v === 0 ? 0 : v <= 25 ? 1 : v <= 50 ? 2 : v <= 70 ? 3 : v <= 90 ? 4 : 5; }
+  var h = ['<thead><tr><th class="brand">Brand</th><th>Ads</th>'];
+  THEMES.forEach(function (t, i) { h.push('<th' + (i === 7 ? ' class="ws-col"' : '') + '>' + t + "</th>"); });
+  h.push("</tr></thead><tbody>");
+  BRANDS.forEach(function (b) {
+    h.push('<tr><td class="brand">' + b.n + '</td><td class="num">' + b.ads + "</td>");
+    b.v.forEach(function (v, i) {
+      var cls = "num cell-" + step(v) + (i === 7 && v === 0 ? " ws-col" : "");
+      h.push('<td class="' + cls + '" title="' + b.n + " — " + FULL[i] + '">' + (v ? v + "%" : "—") + "</td>");
+    });
+    h.push("</tr>");
+  });
+  h.push('</tbody><tfoot><tr><td class="brand">Category</td><td class="num">101</td>');
+  CATEGORY.forEach(function (v, i) { h.push('<td class="num' + (i === 7 ? " ws-col" : "") + '">' + v + "%</td>"); });
+  h.push("</tr></tfoot>");
+  document.getElementById("matrix-table").innerHTML = h.join("");
+
+  // ---- Ad type mix ---------------------------------------------------------
+  var MIX = [
+    { k: "Product", n: 62, note: "a specific item or category, no wider claim" },
+    { k: "Brand", n: 16, note: "says what the brand stands for" },
+    { k: "Promotional", n: 23, note: "a discount, code or loyalty offer does the work" }
+  ];
+  var total = 101, mw = 860, mh = 46;
+  var m = ['<div class="scroller" style="padding:20px"><svg viewBox="0 0 ' + mw + ' ' + (mh + 54) + '" width="100%" role="img" aria-label="Ad type mix: 62 product, 16 brand, 23 promotional out of 101 ads.">'];
+  var x = 0;
+  MIX.forEach(function (s, i) {
+    var w = (mw * s.n) / total - 2;
+    var fill = s.k === "Brand" ? "var(--accent)" : s.k === "Promotional" ? "var(--signal)" : "var(--s2)";
+    var ink = s.k === "Product" ? "var(--ink)" : "var(--on-deep)";
+    m.push('<rect x="' + x + '" y="0" width="' + w + '" height="' + mh + '" rx="3" fill="' + fill + '"/>');
+    m.push('<text x="' + (x + 12) + '" y="' + (mh / 2 + 5) + '" font-size="14" font-weight="650" fill="' + ink + '">' + s.n + "</text>");
+    m.push('<text x="' + x + '" y="' + (mh + 24) + '" font-size="12.5" font-weight="650" fill="var(--ink)">' + s.k + "</text>");
+    m.push('<text x="' + x + '" y="' + (mh + 42) + '" font-size="11.5" fill="var(--ink-3)">' + s.note + "</text>");
+    x += w + 2;
+  });
+  m.push("</svg></div>");
+  document.getElementById("mix-chart").innerHTML = m.join("");
+
+
+  // ---- Cross-validation table -------------------------------------------
+  // manual n, harvested n, mean abs gap across 8 themes, community manual %, community harvested %
+  var XV = [
+    { n: "lululemon",    a: 18, b: 244, gap: 6,  ca: 0, cb: 1 },
+    { n: "New Balance",  a: 4,  b: 246, gap: 6,  ca: 0, cb: 0 },
+    { n: "Nike",         a: 8,  b: 227, gap: 10, ca: 0, cb: 3 },
+    { n: "Under Armour", a: 7,  b: 153, gap: 10, ca: 0, cb: 4 }
+  ];
+  var xh = ['<thead><tr><th class="brand">Brand</th><th>Ads, hand-collected</th><th>Ads, harvested</th>' +
+            '<th>Mean gap, all themes</th><th class="ws-col">Community, hand</th><th class="ws-col">Community, harvested</th></tr></thead><tbody>'];
+  XV.forEach(function (r) {
+    xh.push('<tr><td class="brand">' + r.n + '</td>' +
+      '<td class="num">' + r.a + '</td>' +
+      '<td class="num">' + r.b + '</td>' +
+      '<td class="num">' + r.gap + ' pts</td>' +
+      '<td class="num ws-col">' + r.ca + '%</td>' +
+      '<td class="num ws-col">' + r.cb + '%</td></tr>');
+  });
+  xh.push('</tbody><tfoot><tr><td class="brand">Overall</td><td class="num">37</td><td class="num">870</td>' +
+          '<td class="num">8 pts</td><td class="num ws-col" colspan="2">agrees within 0&ndash;4 points</td></tr></tfoot>');
+  var xt = document.getElementById("xval-table");
+  if (xt) xt.innerHTML = xh.join("");
+
+  // ---- Brand cards ---------------------------------------------------------
+  var c = BRANDS.map(function (b) {
+    return '<div class="card' + (b.gap ? " gap" : "") + '"><h3>' + b.n + "</h3>" +
+      '<p class="pos">' + b.pos + "</p>" +
+      '<p class="proof"><b>' + (b.gap ? "Proof gap" : "Proof") + ":</b> " + b.proof + "</p></div>";
+  });
+  document.getElementById("brand-cards").innerHTML = c.join("");
+})();
+</script>
