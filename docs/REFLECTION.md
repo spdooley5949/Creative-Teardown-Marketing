@@ -24,20 +24,23 @@ Final dataset: 101 live search ads across 12 fitness apparel brands, collected
 from the Google Ads Transparency Center on 12 August 2026.
 
 **The finding.** Performance appears in 59% of ads, comfort in 58%, versatility
-in 53%. Across twelve brands the language is close to interchangeable: "buttery
+in 51%. Across twelve brands the language is close to interchangeable: "buttery
 soft," "built to move in," "looks as good as it feels." Community and belonging
-appears in 5% of ads, five in total across three brands, and is the emptiest
-column in the set. Separately, 61% of ads make a claim with no evidence attached
-to it.
+appears in 6% of ads — six in total, five of them Gymshark's — and is the
+emptiest column in the set. Separately, 67% of ads make a claim with no hard
+evidence attached to it. (These are the post-audit numbers; see the section on
+the human audit below.)
 
-The recommendation is not "claim community." Gymshark already runs couch-to-5K
-and half-marathon coaching. The recommendation is that nobody attaches numbers to
-belonging, and measurable community is the one claim a competitor cannot copy by
-reformulating a fabric.
+The recommendation is not "claim community." Gymshark already owns the claim,
+carrying it in half its ads through coached couch-to-5K and half-marathon
+programmes. The recommendation is that the territory is uncontested — ten brands
+have ceded it to one competitor — and nobody, including the owner, attaches a
+single participation number to it. A measurable programme beats an unproven
+claim, and it is the one move a rival cannot copy by reformulating a fabric.
 
 ---
 
-## Five things the process revealed
+## Six things the process revealed
 
 ### 1. The bottleneck was collection, not intelligence
 
@@ -101,6 +104,37 @@ Counting what brands say is straightforward. Noticing what none of them say is
 harder, and it is the part a spreadsheet of scraped ads will not hand you.
 
 Every recommendation we produced came from absence, not presence.
+
+
+### 6. A human audit moved the numbers a machine had verified
+
+After the tags were frozen, Jessica Smith read all 101 ads against their tags
+(PR #10) and found 42 errors that every one of our automated checks had passed
+over — because our checks verified arithmetic, and these were judgment errors.
+
+The catches ranged from systematic to almost comic. Eighteen ads carried an
+explicit discount with no price theme, which moved Price / Value from 15% of the
+category to 34% and revealed Under Armour running price language in 86% of its
+ads. Fourteen "proof points" were fabric adjectives rather than evidence, which
+took the honest proof figure from 39% to 33%. And Fabletics' entire
+sustainability score rested on one ad headlined "Affordable **Green** Scrubs" —
+the identical ad in purple was not tagged. The model had read a colour as an
+environmental claim.
+
+The headline itself was mistagged in both directions: Tracksmith's "pursuit of
+personal excellence" (individual achievement, not belonging) held the theme,
+while Gymshark's coached programmes and Alo's membership did not. One judgment
+call surfaced that only an owner could make: are loyalty perks community? We
+ruled no — "free shipping for members" is a discount mechanism, the same
+boilerplate that made adiClub look like belonging in the five-year set. Coached
+programmes are community. That ruling is recorded in the audit script and the
+README, so the boundary is inspectable rather than implicit.
+
+The finding survived, sharpened: community went from "nobody claims it" to "one
+brand owns it, uncontested and unproven." Freezing the tags is what made the
+audit worth doing — every correction is now permanent. The lesson: arithmetic
+verification catches broken pipelines; only a human reading the receipts catches
+a colour word masquerading as a strategy.
 
 ---
 
@@ -167,5 +201,7 @@ sample deep enough to be wrong out loud, freeze what should not move, classify
 what you are actually measuring, and state the limits in the same breath as the
 finding.
 
-We found a false conclusion in our own work and corrected it publicly before
-anyone acted on it. On a two-day project, that is the result worth keeping.
+We found false conclusions in our own work — first a sampling artifact, then a
+layer of tagging errors a teammate's audit surfaced — and corrected both
+publicly before anyone acted on them. On a two-day project, that is the result
+worth keeping.

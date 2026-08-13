@@ -205,10 +205,11 @@ sample, one collector, one method, or one month.
 | Alo Yoga | 9 | | Patagonia | 3 |
 
 Headline result: performance appears in 59% of ads and comfort in 58%, with
-versatility at 53% — the three claims are near-interchangeable across all twelve
-brands. Community and belonging appears in 5%, five ads across three brands, and
-is the emptiest column in the set. 61% of ads make a claim with no evidence
-attached.
+versatility at 51% — the three claims are near-interchangeable across all twelve
+brands. Community and belonging appears in 6% — six ads, five of them Gymshark's
+— and is the emptiest column in the set. 67% of ads carry no hard evidence
+(no rating, review count, price or guarantee). Price / Value runs in 34% of ads
+once every explicit offer is tagged, peaking at 86% for Under Armour.
 
 ## Limitations
 
@@ -240,10 +241,14 @@ so its brand mix changes sharply year to year. Nothing in this project claims a
 year-over-year trend, and any such claim built on this data would be measuring
 sample composition rather than category behaviour.
 
-**Tagging.** No human has audited the tags. The tagger is a language model making
-judgment calls. The arithmetic reconciles exactly; that is a different claim from
-the tags being correct. `data/tags.json` is editable, and corrections there are
-permanent.
+**Tagging.** The tagger is a language model making judgment calls, and its output
+was audited row by row against the ad copy by Jessica Smith (`docs/tagging-audit.md`,
+PR #10). 42 corrections were applied to the frozen tags on 12 Aug 2026, and all
+published numbers reflect the audited tags. One recorded ruling: loyalty and
+shipping perks ("Join UA Rewards," "Become A Nike Member") do not count as
+Community / Belonging; named coached programmes and memberships with content
+behind them do. Near-duplicate creative variants are not deduplicated, which
+matters most for small-sample brands like Fabletics.
 
 **A correction worth recording.** An earlier version of this analysis, built on
 42 ads, concluded that three brands cited no proof at all. That was false, and it

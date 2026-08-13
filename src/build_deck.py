@@ -103,8 +103,8 @@ title(s, "The category has run out of ways to say “comfortable”")
 for i, (n, lab, hot) in enumerate([
         ("59%", "claim technical\nperformance", False),
         ("58%", "claim comfort", False),
-        ("53%", "claim gym-to-street\nversatility", False),
-        ("5%", "claim community\nor belonging", True)]):
+        ("51%", "claim gym-to-street\nversatility", False),
+        ("6%", "claim community\nor belonging", True)]):
     x = M + i * 3.02
     rect(s, x, 2.35, 2.8, 2.55, TINT if hot else MIST)
     text(s, n, x + 0.26, 2.62, 2.3, 1.15, size=52, font=HEAD, bold=True,
@@ -113,9 +113,9 @@ for i, (n, lab, hot) in enumerate([
 text(s, "Across all twelve brands the language is near-interchangeable: "
         "“buttery soft,” “built to move in,” “looks as good as it feels.”",
      M, 5.3, W - M * 2, 0.45, size=15, color=MID)
-text(s, "Community and belonging is five ads in the entire set.",
+text(s, "Community and belonging is six ads in the entire set. Five of them are Gymshark’s.",
      M, 5.85, W - M * 2, 0.4, size=15, bold=True, color=SIG)
-notes(s, "Lead here. Three saturated claims, then the cliff. Do not explain method yet.")
+notes(s, "Lead here. Three saturated claims, then the cliff. Community is 6 ads, 5 of them Gymshark. Do not explain method yet.")
 
 # ── 3 · METHOD ──────────────────────────────────────────────────────────────
 s = slide()
@@ -124,8 +124,8 @@ title(s, "101 text ads, twelve brands, one grid")
 for i, (k, v) in enumerate([
         ("Collect", "Every search text ad the Google Ads Transparency Center listed for each "
                     "brand on 12 August, transcribed by hand. Public source, no login, no scraping."),
-        ("Classify", "Claude tags each ad by claim theme, audience, ad type and any concrete "
-                     "proof it cites. Tags are frozen to a file so numbers reproduce exactly."),
+        ("Classify", "Claude tags each ad; tags are frozen to a file so numbers reproduce "
+                     "exactly. A teammate then audited all 101 rows and 42 corrections were applied."),
         ("Assemble", "Counts roll into a matrix as a percent of each brand’s ads, so brands "
                      "sampled at different depths stay comparable.")]):
     y = 2.32 + i * 1.3
@@ -146,9 +146,9 @@ s = slide()
 eyebrow(s, "Evidence")
 title(s, "Where the category is stacked, and where it is not")
 cd = CategoryChartData()
-cd.categories = ["Community", "Sustainability", "Price / Value", "Innovation",
+cd.categories = ["Community", "Sustainability", "Innovation", "Price / Value",
                  "Style", "Versatility", "Comfort", "Performance"]
-cd.add_series("Share of ads", (5, 9, 15, 16, 37, 53, 58, 59))
+cd.add_series("Share of ads", (6, 7, 14, 34, 36, 51, 58, 59))
 ch = s.shapes.add_chart(XL_CHART_TYPE.BAR_CLUSTERED, I(M), I(2.15),
                         I(W - M * 2), I(4.05), cd).chart
 ch.has_legend = False; ch.has_title = False
@@ -208,10 +208,10 @@ notes(s, "This is the answer to 'is that just your sample?'. Two independent col
 # ── 6 · THE PROOF GAP ───────────────────────────────────────────────────────
 s = slide()
 eyebrow(s, "The second finding")
-title(s, "Six in ten ads make a claim and prove nothing")
+title(s, "Two in three ads make a claim and prove nothing")
 rect(s, M, 2.3, 5.5, 2.95, TINT)
-text(s, "61%", M + 0.4, 2.55, 4.7, 1.4, size=72, font=HEAD, bold=True, color=SIG)
-text(s, "of ads cite no rating, guarantee, statistic or offer of any kind",
+text(s, "67%", M + 0.4, 2.55, 4.7, 1.4, size=72, font=HEAD, bold=True, color=SIG)
+text(s, "of ads carry no hard evidence: no rating, review count, price or guarantee",
      M + 0.4, 3.95, 4.7, 1.0, size=15, color=INK)
 text(s, "Where proof does appear, it is wildly uneven", 7.0, 2.3, 5.6, 0.4, size=15, bold=True)
 for i, (b, v) in enumerate([("Alo Yoga", "21,615 reviews"), ("Vuori", "13,593 reviews"),
@@ -225,23 +225,23 @@ for i, (b, v) in enumerate([("Alo Yoga", "21,615 reviews"), ("Vuori", "13,593 re
     rect(s, 7.0, y + 0.33, 5.6, 0.008, LINE)
 text(s, "A premium brand advertising on 22 reviews is not using proof. It is exposing itself.",
      M, 5.6, W - M * 2, 0.4, size=15, bold=True)
-notes(s, "Arguably the stronger finding. Ratings are the category default proof, which makes "
-         "review volume a competitive asset rather than hygiene.")
+notes(s, "67% carry no hard evidence after the audited proof cleanup. Also in the corrected data: "
+         "Under Armour runs price language in 86% of its ads. Ratings are the category default proof.")
 
 # ── 7 · THE OPENING ─────────────────────────────────────────────────────────
 s = slide()
 eyebrow(s, "The opening")
-title(s, "Nobody has made belonging measurable")
-text(s, "Community is not unclaimed. It is unproven.", M, 2.12, W - M * 2, 0.45,
+title(s, "One brand owns belonging. Nobody else contests it.")
+text(s, "Community is uncontested territory, and even its owner does not prove it.", M, 2.12, W - M * 2, 0.45,
      size=17, bold=True, color=SIG)
 for i, (h, b) in enumerate([
-        ("What exists", "Gymshark runs couch-to-5K and half-marathon coaching. Alo has a "
-                        "membership tier. Tracksmith sells Boston running heritage."),
-        ("What is missing", "Not one publishes a participation number, a completion rate or a "
-                            "member count. Belonging is tone of voice, not evidence."),
+        ("What exists", "Gymshark has made belonging half its message: coached couch-to-5K and "
+                        "half-marathon programmes. Alo has ALO Access. Everyone else: zero."),
+        ("What is missing", "Neither publishes a participation number, a completion rate or a "
+                            "member count. The claim exists; the proof does not."),
         ("The move", "A named programme with published numbers, placed where competitors put "
-                     "discount percentages. The one claim a rival cannot copy by reformulating "
-                     "a fabric.")]):
+                     "discount percentages. Ten brands have left this lane to one competitor "
+                     "who is not defending it with evidence.")]):
     x = M + i * 4.02
     hot = i == 2
     rect(s, x, 2.82, 3.75, 2.8, TINT if hot else MIST)
@@ -250,8 +250,8 @@ for i, (h, b) in enumerate([
 text(s, "Spend against runners and gym training, not the everyday athleisure block where "
         "lululemon, Vuori and Fabletics are stacked.",
      M, 5.95, W - M * 2, 0.5, size=14, color=MID)
-notes(s, "Hostile question to expect: why has Gymshark not already won this? "
-         "Answer: they treat it as voice, not proof. Nobody publishes numbers.")
+notes(s, "Hostile question: has Gymshark not already won this? Answer: it owns the claim, not the "
+         "proof — no numbers published, framed narrowly around the weight room, and ten brands ceded the lane.")
 
 # ── 8 · WHAT WE GOT WRONG ───────────────────────────────────────────────────
 s = slide(WASH)
@@ -272,8 +272,9 @@ for i, (b, said, real) in enumerate([
     text(s, said, M + 2.3, y, 4.4, 0.6, size=12.5, color=GREY, italic=True)
     text(s, real, M + 7.0, y, 4.6, 0.7, size=12.5, color=SIG, bold=True)
     rect(s, M, y + 0.7, W - M * 2, 0.008, SOFTB)
-text(s, "The Transparency Center shows four ads until you click “See all ads.” Those four skew "
-        "to product listings, which carry no ratings. We went back and collected the full lists.",
+text(s, "The Transparency Center shows four ads until you click “See all ads.” We went back and "
+        "collected the full lists. Then a teammate audited every tag and found 42 more errors, "
+        "including in our own headline count. All corrected before this presentation.",
      M, 6.15, W - M * 2, 0.7, size=13, color=MID)
 notes(s, "Do not skip this. Showing you caught your own false finding is the most credible thing "
          "in the deck and it inoculates you against anyone who checks the source.")

@@ -38,22 +38,23 @@
       "proof_points": [],
       "themes": [
         "Sustainability",
-        "Versatility / Gym-to-street"
+        "Versatility / Gym-to-street",
+        "Price / Value"
       ]
     },
     "0701576ef5018959": {
-      "ad_type": "Product",
+      "ad_type": "Brand",
       "audiences": [
         "Runners",
         "Everyday / athleisure"
       ],
       "proof_points": [],
       "themes": [
-        "Innovation / New technology"
+        "Community / Belonging"
       ]
     },
     "089fe0b44ff08b3f": {
-      "ad_type": "Brand",
+      "ad_type": "Product",
       "audiences": [
         "Everyday / athleisure"
       ],
@@ -73,8 +74,6 @@
       ],
       "proof_points": [
         "4-Way Stretch",
-        "Moisture Wicking",
-        "Breathable",
         "100% Product Guarantee",
         "Free Shipping Over $75",
         "Rating 4.6 from 13,593 reviews",
@@ -83,7 +82,8 @@
       "themes": [
         "Performance / Technical fabric",
         "Versatility / Gym-to-street",
-        "Comfort / Feel"
+        "Comfort / Feel",
+        "Price / Value"
       ]
     },
     "0dcf8c70eae8cb49": {
@@ -124,7 +124,8 @@
       ],
       "proof_points": [],
       "themes": [
-        "Comfort / Feel"
+        "Comfort / Feel",
+        "Price / Value"
       ]
     },
     "10ed177784bbf258": {
@@ -134,11 +135,7 @@
         "Yoga & studio",
         "Everyday / athleisure"
       ],
-      "proof_points": [
-        "Performance-Engineered",
-        "Yogi-Tested",
-        "Free Worldwide Shipping"
-      ],
+      "proof_points": [],
       "themes": [
         "Comfort / Feel",
         "Style / Design",
@@ -160,7 +157,7 @@
       "ad_type": "Product",
       "audiences": [
         "Everyday / athleisure",
-        "Gym & strength training"
+        "Runners"
       ],
       "proof_points": [],
       "themes": [
@@ -206,7 +203,8 @@
         "Comfort / Feel",
         "Versatility / Gym-to-street",
         "Style / Design",
-        "Innovation / New technology"
+        "Innovation / New technology",
+        "Price / Value"
       ]
     },
     "268c9e08f02e9183": {
@@ -220,7 +218,8 @@
       ],
       "themes": [
         "Performance / Technical fabric",
-        "Innovation / New technology"
+        "Innovation / New technology",
+        "Price / Value"
       ]
     },
     "28306b41185a9224": {
@@ -235,7 +234,8 @@
       "themes": [
         "Performance / Technical fabric",
         "Comfort / Feel",
-        "Community / Belonging"
+        "Community / Belonging",
+        "Price / Value"
       ]
     },
     "28597530facb1fe4": {
@@ -248,8 +248,7 @@
       ],
       "themes": [
         "Performance / Technical fabric",
-        "Style / Design",
-        "Community / Belonging"
+        "Style / Design"
       ]
     },
     "2a51dc5716ebda79": {
@@ -298,10 +297,7 @@
       "audiences": [
         "Everyday / athleisure"
       ],
-      "proof_points": [
-        "Thousands of gently used items",
-        "Dropping daily"
-      ],
+      "proof_points": [],
       "themes": [
         "Sustainability",
         "Price / Value"
@@ -318,7 +314,8 @@
       "themes": [
         "Performance / Technical fabric",
         "Style / Design",
-        "Versatility / Gym-to-street"
+        "Versatility / Gym-to-street",
+        "Price / Value"
       ]
     },
     "3ceefabda5c11f47": {
@@ -337,7 +334,8 @@
       "themes": [
         "Performance / Technical fabric",
         "Versatility / Gym-to-street",
-        "Style / Design"
+        "Style / Design",
+        "Price / Value"
       ]
     },
     "3dfe131d13e71fd7": {
@@ -357,7 +355,6 @@
         "Everyday / athleisure"
       ],
       "proof_points": [
-        "Swiss-engineered",
         "save up to 40%"
       ],
       "themes": [
@@ -365,9 +362,7 @@
         "Comfort / Feel",
         "Versatility / Gym-to-street",
         "Innovation / New technology",
-        "Style / Design",
-        "Price / Value",
-        "Sustainability"
+        "Price / Value"
       ]
     },
     "46fc531ca53406d2": {
@@ -379,19 +374,18 @@
       ],
       "proof_points": [],
       "themes": [
-        "Performance / Technical fabric"
+        "Performance / Technical fabric",
+        "Price / Value"
       ]
     },
     "47400b92afafe9cb": {
       "ad_type": "Brand",
       "audiences": [
-        "Outdoor & hiking",
-        "Runners"
+        "Outdoor & hiking"
       ],
       "proof_points": [],
       "themes": [
-        "Performance / Technical fabric",
-        "Versatility / Gym-to-street"
+        "Performance / Technical fabric"
       ]
     },
     "483f0d5d9120c232": {
@@ -429,7 +423,6 @@
       ],
       "proof_points": [
         "Rating 4.5 from 21,615 reviews",
-        "Free Shipping and Free Returns",
         "Average delivery time 1 to 4 days"
       ],
       "themes": [
@@ -496,14 +489,16 @@
       ]
     },
     "584209bd3e5e502e": {
-      "ad_type": "Product",
+      "ad_type": "Brand",
       "audiences": [
         "Runners"
       ],
       "proof_points": [],
       "themes": [
         "Performance / Technical fabric",
-        "Versatility / Gym-to-street"
+        "Versatility / Gym-to-street",
+        "Community / Belonging",
+        "Price / Value"
       ]
     },
     "5a8a17bff8ede39c": {
@@ -576,7 +571,8 @@
       ],
       "themes": [
         "Comfort / Feel",
-        "Performance / Technical fabric"
+        "Performance / Technical fabric",
+        "Price / Value"
       ]
     },
     "668446c56d5f0ae0": {
@@ -614,7 +610,6 @@
         "Runners"
       ],
       "proof_points": [
-        "Free Shipping",
         "30-day Returns"
       ],
       "themes": [
@@ -630,7 +625,8 @@
       "proof_points": [],
       "themes": [
         "Performance / Technical fabric",
-        "Comfort / Feel"
+        "Comfort / Feel",
+        "Price / Value"
       ]
     },
     "70e27aafa53a7e7f": {
@@ -643,7 +639,7 @@
         "Up to 40% Off"
       ],
       "themes": [
-        "Versatility / Gym-to-street"
+        "Price / Value"
       ]
     },
     "71ade8b52c4893d3": {
@@ -653,9 +649,7 @@
         "Runners",
         "Everyday / athleisure"
       ],
-      "proof_points": [
-        "Free Returns"
-      ],
+      "proof_points": [],
       "themes": [
         "Innovation / New technology",
         "Versatility / Gym-to-street"
@@ -698,10 +692,8 @@
       ],
       "proof_points": [
         "Free delivery on orders over $100",
-        "Free Returns",
         "4.6 rating from 200 reviews",
-        "Pay in 4 Installments",
-        "Student Discount"
+        "Pay in 4 Installments"
       ],
       "themes": [
         "Performance / Technical fabric",
@@ -733,7 +725,9 @@
         "50% Off",
         "2X A Year"
       ],
-      "themes": []
+      "themes": [
+        "Price / Value"
+      ]
     },
     "867f2eed372b555a": {
       "ad_type": "Product",
@@ -785,7 +779,8 @@
       "themes": [
         "Comfort / Feel",
         "Style / Design",
-        "Versatility / Gym-to-street"
+        "Versatility / Gym-to-street",
+        "Price / Value"
       ]
     },
     "8a5727059a9e2047": {
@@ -850,15 +845,13 @@
       ],
       "themes": [
         "Comfort / Feel",
-        "Performance / Technical fabric"
+        "Performance / Technical fabric",
+        "Price / Value"
       ]
     },
     "9f62c49823ff799d": {
       "ad_type": "Product",
-      "audiences": [
-        "Men",
-        "Gym & strength training"
-      ],
+      "audiences": [],
       "proof_points": [],
       "themes": [
         "Performance / Technical fabric"
@@ -922,7 +915,6 @@
         "Outdoor & hiking"
       ],
       "proof_points": [
-        "Free Shipping and Returns",
         "The Arc'teryx Guarantee"
       ],
       "themes": [
@@ -973,9 +965,6 @@
         "Everyday / athleisure"
       ],
       "proof_points": [
-        "Breathable",
-        "Lightweight",
-        "Wrinkle resistant",
         "$15 price point"
       ],
       "themes": [
@@ -1076,10 +1065,7 @@
         "Men",
         "Everyday / athleisure"
       ],
-      "proof_points": [
-        "Free Shipping",
-        "Lightweight and Breathable"
-      ],
+      "proof_points": [],
       "themes": [
         "Performance / Technical fabric",
         "Comfort / Feel",
@@ -1093,11 +1079,11 @@
         "Runners"
       ],
       "proof_points": [
-        "Designed in Boston",
         "Prices starting from $54.00"
       ],
       "themes": [
-        "Performance / Technical fabric"
+        "Performance / Technical fabric",
+        "Price / Value"
       ]
     },
     "d1cac95ebb716e3c": {
@@ -1121,18 +1107,14 @@
         "Gym & strength training",
         "Everyday / athleisure"
       ],
-      "proof_points": [
-        "Sweat-wicking",
-        "Breathable",
-        "Anti-stink"
-      ],
+      "proof_points": [],
       "themes": [
         "Performance / Technical fabric",
         "Versatility / Gym-to-street"
       ]
     },
     "d7228a2d5140ca86": {
-      "ad_type": "Brand",
+      "ad_type": "Product",
       "audiences": [],
       "proof_points": [
         "3.1 rating from 35 reviews"
@@ -1153,8 +1135,7 @@
         "Performance / Technical fabric",
         "Comfort / Feel",
         "Style / Design",
-        "Versatility / Gym-to-street",
-        "Innovation / New technology"
+        "Versatility / Gym-to-street"
       ]
     },
     "dafa515f9defc9e2": {
@@ -1175,11 +1156,7 @@
         "Men",
         "Outdoor & hiking"
       ],
-      "proof_points": [
-        "Gore-tex Jackets",
-        "Insulated Jackets",
-        "New GORE-TEX ePE Membrane"
-      ],
+      "proof_points": [],
       "themes": [
         "Performance / Technical fabric",
         "Comfort / Feel"
@@ -1195,7 +1172,8 @@
       "themes": [
         "Performance / Technical fabric",
         "Style / Design",
-        "Versatility / Gym-to-street"
+        "Versatility / Gym-to-street",
+        "Price / Value"
       ]
     },
     "e1cad382f6c79e0e": {
@@ -1218,11 +1196,7 @@
       ],
       "proof_points": [
         "4.6 rating from 58 reviews",
-        "30-day returns",
-        "Free shipping",
-        "New sockliner for easy step-in",
-        "Wider opening for better fit",
-        "More heel support"
+        "30-day returns"
       ],
       "themes": [
         "Comfort / Feel",
@@ -1285,7 +1259,8 @@
         "Performance / Technical fabric",
         "Comfort / Feel",
         "Innovation / New technology",
-        "Style / Design"
+        "Style / Design",
+        "Price / Value"
       ]
     },
     "eaac3de6b6d55e20": {
@@ -1297,13 +1272,11 @@
       ],
       "proof_points": [
         "4.5 rating from 21,615 reviews",
-        "Order accuracy 95 to 100%",
-        "Celeb-approved"
+        "Order accuracy 95 to 100%"
       ],
       "themes": [
         "Style / Design",
-        "Versatility / Gym-to-street",
-        "Community / Belonging"
+        "Versatility / Gym-to-street"
       ]
     },
     "ec210ab225cfaab7": {
@@ -1316,14 +1289,13 @@
       "proof_points": [],
       "themes": [
         "Style / Design",
-        "Versatility / Gym-to-street"
+        "Versatility / Gym-to-street",
+        "Community / Belonging"
       ]
     },
     "ef53e1b3595fa0b6": {
       "ad_type": "Product",
-      "audiences": [
-        "Runners"
-      ],
+      "audiences": [],
       "proof_points": [],
       "themes": [
         "Performance / Technical fabric",
@@ -1363,8 +1335,7 @@
       ],
       "proof_points": [
         "Rating 4.6 from 1,919 reviews",
-        "Most items returnable 60+ days",
-        "Live Support Available"
+        "Most items returnable 60+ days"
       ],
       "themes": [
         "Performance / Technical fabric",
@@ -1392,13 +1363,11 @@
       "proof_points": [
         "First Scrub Set for $15",
         "50% off Underscrubs",
-        "50% off Jackets and Vests",
-        "Breathable, lightweight and wrinkle resistant"
+        "50% off Jackets and Vests"
       ],
       "themes": [
         "Price / Value",
-        "Comfort / Feel",
-        "Sustainability"
+        "Comfort / Feel"
       ]
     },
     "fa946fda03045fdd": {
