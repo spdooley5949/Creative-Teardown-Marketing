@@ -1,5 +1,21 @@
 # Creative Teardown
 
+### ▶ Open the live findings
+
+| | |
+|---|---|
+| **Interactive deck** (what we present) | **https://spdooley5949.github.io/Creative-Teardown-Marketing/web/live_deck.html** |
+| **Findings page** (read-through) | **https://spdooley5949.github.io/Creative-Teardown-Marketing/web/review_page.html** |
+
+Both open in any browser. No login, no download, nothing to install. All 101 ads
+are embedded and the pages make zero external requests, so they keep working
+offline once loaded.
+
+**These two links are the current ones.** Any `claude.ai/code/artifact/...` link
+posted earlier in this repo or in an issue is superseded and should be ignored.
+
+---
+
 Reads a sheet of competitor ads, classifies every one of them, and produces a
 messaging matrix that shows what an entire category is claiming, who it is
 talking to, what it offers as evidence, and which territory nobody has taken.
