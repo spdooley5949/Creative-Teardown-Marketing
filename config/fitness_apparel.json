@@ -1,0 +1,28 @@
+{
+  "industry": "Fitness apparel",
+  "themes": [
+    "Performance / Technical fabric",
+    "Comfort / Feel",
+    "Style / Design",
+    "Versatility / Gym-to-street",
+    "Sustainability",
+    "Price / Value",
+    "Innovation / New technology",
+    "Community / Belonging"
+  ],
+  "audiences": [
+    "Women",
+    "Men",
+    "Runners",
+    "Yoga & studio",
+    "Gym & strength training",
+    "Outdoor & hiking",
+    "Everyday / athleisure",
+    "Size-inclusive"
+  ],
+  "ad_types": [
+    "Brand",
+    "Product",
+    "Promotional"
+  ]
+}

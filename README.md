@@ -84,17 +84,46 @@ ads are brand-level, against 62 product and 23 promotional. Running with
 
 ## Configuring it for another category
 
-Edit two lists at the top of `src/build_matrix.py`. They become the matrix
-columns.
+The claim themes and audiences that become the matrix columns live in
+`config/<slug>.json`, one file per category. The default is
+`config/fitness_apparel.json`, which is what this project's published numbers
+were built from.
 
-```python
-THEMES = [...]      # the claim types you want to track
-AUDIENCES = [...]   # the segments you want to track
+To analyse a different category, point the tool at a different config:
+
+```bash
+venv/bin/python src/build_matrix.py data/kits.csv --industry meal_kit
 ```
 
-Change these and delete `data/tags.json`, or run `--retag`, so every ad is
-rescored against the new definitions. Leaving stale tags in place while changing
-the lists will produce a matrix that silently disagrees with itself.
+Tags and output are kept per category, so two industries can never overwrite
+each other. The default keeps its original filenames (`data/tags.json`,
+`output/messaging_matrix.xlsx`); anything else is suffixed with the slug.
+
+If you edit a config after ads have already been tagged against it, the run
+detects the change and rescores everything rather than reusing tags that were
+chosen from a different list of options. That failure used to be silent.
+
+### Drafting a taxonomy you do not have yet
+
+Knowing the eight claims a category competes on is a marketing judgment, not a
+lookup. `propose_taxonomy.py` gives you a first draft to argue with:
+
+```bash
+venv/bin/python src/propose_taxonomy.py data/kits.csv --slug meal_kit \
+    --name "Meal kit delivery"
+```
+
+It samples up to 50 ads spread evenly across brands, asks Opus for eight themes
+and eight audiences with a one-line definition each, and writes
+`config/meal_kit.json` for you to edit.
+
+The draft deliberately includes two or three angles the sampled ads **do not**
+use, flagged `observed: false` in the file. This is the whole point: if every
+theme were derived from the ads in front of it, every theme would have at least
+one ad by construction, the whitespace column could never come up empty, and the
+analysis would be structurally unable to find the thing it exists to find. Read
+those unobserved themes carefully — they are hypotheses, and a bad one produces
+fake whitespace just as easily as a missing one hides real whitespace.
 
 ## Setup
 
@@ -120,6 +149,8 @@ venv/bin/python src/build_matrix.py data/ads.csv
 
 | Flag | Effect |
 |---|---|
+| `--industry <slug>` | Taxonomy to score against, from `config/<slug>.json`. Defaults to `fitness_apparel`. |
+| `--config <path>` | Same, but points straight at a JSON file. |
 | `--retag` | Ignore saved tags and rescore every ad. Use after changing themes or audiences. |
 | `--brand-only` | Build the matrices from brand-level ads only, excluding product and promotional. |
 
@@ -264,7 +295,10 @@ data/ads.csv        input: one row per ad, four columns
 data/tags.json      frozen tags for the primary set, committed, hand-editable
 data/competitor_ads_5yr_v2.csv   historical set, 2021-2026, contributed
 data/tags_trend.json             frozen tags for the historical set
+config/fitness_apparel.json      the themes and audiences this project ran on
 src/build_matrix.py the primary tool: current-state matrix
+src/taxonomy.py     loads config/<slug>.json, keeps industries from colliding
+src/propose_taxonomy.py  drafts a config for a category we have not studied
 src/trend_analysis.py  the historical analyser, separate tags and output
 output/             generated workbook
 docs/PRD.md         product requirements

@@ -11,10 +11,17 @@ Two models, each doing what it is best at:
   - Opus reads the finished matrix and writes the strategic findings
 
 Usage:
-    venv/bin/python src/build_matrix.py [path/to/ads.csv]
+    venv/bin/python src/build_matrix.py [path/to/ads.csv] [flags]
+
+Flags:
+    --industry <slug>   taxonomy to score against (default: fitness_apparel)
+    --config <path>     same, but points straight at a JSON file
+    --retag             ignore saved tags and score every ad again
+    --brand-only        keep only brand-level ads before building the matrix
 
 Default input:  data/sample_ads.csv
-Output:         output/messaging_matrix.xlsx
+Output:         output/messaging_matrix.xlsx  (suffixed with the industry slug
+                when the taxonomy is not the default)
 """
 import csv
 import hashlib
@@ -29,41 +36,17 @@ from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
 from openpyxl.utils import get_column_letter
 
+import taxonomy
+
 # ---------------------------------------------------------------------------
-# EDIT THESE TWO LISTS to fit your category. They become the matrix columns.
-# ---------------------------------------------------------------------------
-
-THEMES = [
-    "Performance / Technical fabric",
-    "Comfort / Feel",
-    "Style / Design",
-    "Versatility / Gym-to-street",
-    "Sustainability",
-    "Price / Value",
-    "Innovation / New technology",
-    "Community / Belonging",
-]
-
-AUDIENCES = [
-    "Women",
-    "Men",
-    "Runners",
-    "Yoga & studio",
-    "Gym & strength training",
-    "Outdoor & hiking",
-    "Everyday / athleisure",
-    "Size-inclusive",
-]
-
-# What kind of ad this is. Search results are dominated by product-feed and
-# promotional ads, which say nothing about how a brand positions itself.
-# Tagging the type lets the matrix be run on brand-level ads alone.
-AD_TYPES = [
-    "Brand",          # says what the brand stands for
-    "Product",        # pushes a specific item or category
-    "Promotional",    # led by a discount, code, sale or loyalty offer
-]
-
+# The claim themes and audiences that become the matrix columns are no longer
+# hardcoded here. They load from config/<slug>.json, one file per category, so
+# the same tool works on any industry. Pick one with --industry <slug> or
+# --config <path>; the default is the fitness apparel set this project was
+# built on, so every existing command behaves as it always did.
+#
+# Drafting a taxonomy for a new category:
+#   venv/bin/python src/propose_taxonomy.py data/your_ads.csv --slug your_category
 # ---------------------------------------------------------------------------
 
 TAG_MODEL = "claude-haiku-4-5"      # tags each ad: cheap, fast, accurate enough
@@ -71,6 +54,19 @@ INSIGHT_MODEL = "claude-opus-5"     # reads the matrix and writes the findings
 
 # Resolve paths from the project root, so the script runs from anywhere.
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+TAXONOMY = taxonomy.load(BASE, taxonomy.resolve(sys.argv[1:]))
+THEMES = TAXONOMY["themes"]
+AUDIENCES = TAXONOMY["audiences"]
+
+# What kind of ad this is. Search results are dominated by product-feed and
+# promotional ads, which say nothing about how a brand positions itself.
+# Tagging the type lets the matrix be run on brand-level ads alone. These are
+# category-neutral, so a new config can usually keep them as they are:
+#   Brand        says what the brand stands for
+#   Product      pushes a specific item or category
+#   Promotional  led by a discount, code, sale or loyalty offer
+AD_TYPES = TAXONOMY["ad_types"]
 
 load_dotenv(os.path.join(BASE, ".env"))
 API_KEY = os.getenv("ANTHROPIC_API_KEY")
@@ -269,9 +265,14 @@ def tag_ad(competitor, ad_text):
 # runs. The file is committed, so the matrix is reproducible and a reviewer's
 # correction to a tag survives the next rebuild. Delete the file, or pass
 # --retag, to score everything again from scratch.
+#
+# Each industry gets its own file: data/tags.json for the default taxonomy,
+# data/tags.<slug>.json for any other. The default deliberately keeps the
+# original filename, because that file is committed and the published numbers
+# reconcile against it.
 # ---------------------------------------------------------------------------
 
-TAGS_PATH = os.path.join(BASE, "data", "tags.json")
+TAGS_PATH = taxonomy.tags_path(BASE, TAXONOMY)
 
 
 def ad_key(competitor, ad_text):
@@ -282,12 +283,29 @@ def ad_key(competitor, ad_text):
 def load_frozen_tags():
     if not os.path.exists(TAGS_PATH):
         return {}
+    name = os.path.basename(TAGS_PATH)
     try:
         with open(TAGS_PATH, encoding="utf-8") as fh:
-            return json.load(fh).get("tags", {})
+            payload = json.load(fh)
     except (json.JSONDecodeError, OSError):
-        print("  tags.json unreadable, re-tagging everything")
+        print(f"  {name} unreadable, re-tagging everything")
         return {}
+
+    # A cached tag is only meaningful against the taxonomy that produced it: the
+    # model picked from that list of options, not this one. Tag files are already
+    # kept per industry, so this catches the subtler case of a config being
+    # edited underneath an existing file. Silently reusing those tags would
+    # report numbers for themes the run never actually scored against.
+    stored = {k: payload.get(k) for k in taxonomy.REQUIRED_KEYS}
+    if any(v is not None for v in stored.values()):
+        changed = [k for k in taxonomy.REQUIRED_KEYS if stored[k] != TAXONOMY[k]]
+        if changed:
+            print(f"  {name} was built on a different taxonomy "
+                  f"({', '.join(changed)} changed since it was written).")
+            print("  Re-tagging everything; the old tags are not comparable.")
+            return {}
+
+    return payload.get("tags", {})
 
 
 def save_frozen_tags(frozen):
@@ -675,9 +693,30 @@ def build_workbook(rows, tags, findings):
 
 # ---------------------------------------------------------------------------
 
+def parse_argv(argv):
+    """Split the command line into positional paths and flags.
+
+    --industry and --config take a value, so that value has to be skipped rather
+    than mistaken for the input CSV.
+    """
+    positional, flags = [], set()
+    takes_value = ("--industry", "--config")
+    skip = False
+    for i, a in enumerate(argv):
+        if skip:
+            skip = False
+            continue
+        if a.startswith("--"):
+            flags.add(a.split("=", 1)[0])
+            if a in takes_value and i + 1 < len(argv):
+                skip = True
+            continue
+        positional.append(a)
+    return positional, flags
+
+
 def main():
-    args = [a for a in sys.argv[1:] if not a.startswith("--")]
-    flags = {a for a in sys.argv[1:] if a.startswith("--")}
+    args, flags = parse_argv(sys.argv[1:])
     retag = "--retag" in flags
     brand_only = "--brand-only" in flags
 
@@ -686,6 +725,8 @@ def main():
         in_path = os.path.join(BASE, in_path)
 
     rows = validate(read_ads(in_path), in_path)
+    print(f"Industry: {TAXONOMY['industry']} "
+          f"({len(THEMES)} themes, {len(AUDIENCES)} audiences)")
     print(f"Read {len(rows)} ads from {os.path.relpath(in_path, BASE)}.")
 
     frozen = {} if retag else load_frozen_tags()
@@ -749,9 +790,8 @@ def main():
     )
 
     wb, whitespace, unaddressed, _ = build_workbook(rows, tags, findings)
-    out_dir = os.path.join(BASE, "output")
-    os.makedirs(out_dir, exist_ok=True)
-    out_path = os.path.join(out_dir, "messaging_matrix.xlsx")
+    os.makedirs(os.path.join(BASE, "output"), exist_ok=True)
+    out_path = taxonomy.output_path(BASE, TAXONOMY, "messaging_matrix")
     wb.save(out_path)
 
     print(f"\nSaved to {os.path.relpath(out_path, BASE)}")
