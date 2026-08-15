@@ -28,10 +28,13 @@ from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
 
-from build_matrix import BASE, THEMES, tag_ad
+import taxonomy
+from build_matrix import BASE, TAXONOMY, THEMES, tag_ad
 
-TAGS_PATH = os.path.join(BASE, "data", "tags_trend.json")
-OUT_PATH = os.path.join(BASE, "output", "messaging_trend.xlsx")
+# Both follow the active taxonomy, so a second industry cannot overwrite the
+# first one's trend tags or workbook. The default keeps its original filenames.
+TAGS_PATH = taxonomy.tags_path(BASE, TAXONOMY, stem="tags_trend")
+OUT_PATH = taxonomy.output_path(BASE, TAXONOMY, "messaging_trend")
 WORKERS = 12                       # tagging is IO-bound; keep well under rate limits
 DATE_FORMATS = ("%m/%d/%Y", "%Y-%m-%d", "%m/%d/%y", "%d/%m/%Y")
 
