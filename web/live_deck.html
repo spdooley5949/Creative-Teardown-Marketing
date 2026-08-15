@@ -284,17 +284,18 @@
 
 
   <section class="slide" data-t="Whitespace finder &mdash; live search">
-    <p class="eyebrow">Whitespace finder &mdash; type anything, see who is not saying it</p>
-    <h2 class="title" style="font-size:clamp(22px,2.2vw,38px)">Search all 101 ads</h2>
+    <p class="eyebrow">Whitespace finder &mdash; type anything; known words resolve to the audited themes</p>
+    <h2 class="title" style="font-size:clamp(22px,2.2vw,38px)">Search all 101 audited ads
+      <span style="font-size:.55em;color:var(--grey);font-weight:500">&middot; 1,979 collected across the project</span></h2>
     <div class="sbox">
-      <input id="q" type="search" placeholder="community, guarantee, sustainable, women, 20% off&hellip;"
+      <input id="q" type="search" placeholder="community, sustainable, guarantee, women, 20% off&hellip;"
              autocomplete="off" spellcheck="false" aria-label="Search all ads">
     </div>
     <div class="sugg" id="sugg"></div>
     <div class="sres">
-      <div class="scol"><h4>Brands saying it</h4><div id="s-yes"></div></div>
-      <div class="scol gap"><h4>Brands not saying it &mdash; the whitespace</h4><div id="s-no"></div></div>
-      <div class="scol"><h4>The actual ads</h4><div id="s-hits"></div></div>
+      <div class="scol"><h4 id="h-yes">Brands saying it</h4><div id="s-yes"></div></div>
+      <div class="scol gap"><h4 id="h-no">Brands not saying it &mdash; the whitespace</h4><div id="s-no"></div></div>
+      <div class="scol"><h4 id="h-hits">The actual ads</h4><div id="s-hits"></div></div>
     </div>
     <p class="verdict" id="s-verdict"></p>
   </section>
@@ -513,45 +514,126 @@ const ADS=[{"b":"lululemon","t":"lululemon Women's Tank Tops - lululemon Tank To
   });
 
 
-  /* ---------- whitespace finder ---------- */
-  const SUGG=["community","guarantee","sustainable","recycled","women","men","runners",
-              "20% off","free shipping","reviews","coach","member","durable","premium"];
+  /* ---------- whitespace finder ----------
+     Three modes. A query that names one of the eight audited themes resolves to
+     the TAGGED numbers (the same ones every other slide reports), with the tagged
+     ads as receipts. Anything else falls back to literal text match. A query that
+     matches nothing shows the theme map instead of a cheap "completely open" —
+     in 101 ads, a missing word is weak evidence on its own. */
+  const SUGG=["community","sustainable","guarantee","reviews","coach","women",
+              "20% off","breathable"];
+  const THEME_LIST=["Performance / Technical fabric","Comfort / Feel",
+    "Versatility / Gym-to-street","Style / Design","Price / Value",
+    "Innovation / New technology","Sustainability","Community / Belonging"];
+  const TMAP=[
+    ["community","Community / Belonging"],["belonging","Community / Belonging"],
+    ["run club","Community / Belonging"],["together","Community / Belonging"],
+    ["sustainab","Sustainability"],["recycl","Sustainability"],
+    ["planet","Sustainability"],["carbon","Sustainability"],["environment","Sustainability"],
+    ["performance","Performance / Technical fabric"],["technical","Performance / Technical fabric"],
+    ["wicking","Performance / Technical fabric"],["compression","Performance / Technical fabric"],
+    ["comfort","Comfort / Feel"],["comfy","Comfort / Feel"],["cozy","Comfort / Feel"],
+    ["buttery","Comfort / Feel"],["soft","Comfort / Feel"],
+    ["style","Style / Design"],["stylish","Style / Design"],["design","Style / Design"],
+    ["versatil","Versatility / Gym-to-street"],["gym-to-street","Versatility / Gym-to-street"],
+    ["athleisure","Versatility / Gym-to-street"],["everyday","Versatility / Gym-to-street"],
+    ["price","Price / Value"],["discount","Price / Value"],["affordable","Price / Value"],
+    ["cheap","Price / Value"],["sale","Price / Value"],
+    ["innovation","Innovation / New technology"],["innovative","Innovation / New technology"],
+    ["patented","Innovation / New technology"],["engineered","Innovation / New technology"]];
   const qEl=document.getElementById("q"), sYes=document.getElementById("s-yes"),
         sNo=document.getElementById("s-no"), sHits=document.getElementById("s-hits"),
-        sVer=document.getElementById("s-verdict");
+        sVer=document.getElementById("s-verdict"),
+        hYes=document.getElementById("h-yes"), hNo=document.getElementById("h-no"),
+        hHits=document.getElementById("h-hits");
   document.getElementById("sugg").innerHTML=SUGG.map(t=>`<button data-q="${t}">${t}</button>`).join("");
   document.getElementById("sugg").addEventListener("click",e=>{
     const b=e.target.closest("button"); if(!b)return;
     qEl.value=b.dataset.q; runSearch();
   });
   function esc(t){return t.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));}
+  function mark(t,q){
+    const i=t.toLowerCase().indexOf(q);
+    if(i<0||!q)return esc(t);
+    return esc(t.slice(0,i))+"<b>"+esc(t.slice(i,i+q.length))+"</b>"+esc(t.slice(i+q.length));
+  }
+  function themeOf(q){
+    if(/\d/.test(q))return null;               // "20% off" etc. stay literal
+    for(const[k,t]of TMAP)
+      if(q.includes(k)||(q.length>=5&&k.startsWith(q)))return t;
+    return null;
+  }
+  function themeCount(t){return ADS.filter(a=>a.th.includes(t)).length;}
+  function heads(a,b,c){hYes.textContent=a;hNo.textContent=b;hHits.textContent=c;}
   function runSearch(){
     const q=(qEl.value||"").trim().toLowerCase();
-    if(!q){ sYes.innerHTML=sNo.innerHTML=sHits.innerHTML=""; 
-            sVer.innerHTML='<span style="color:var(--grey);font-weight:400">'+
-            'Type a word or phrase. Anything no brand says is open ground.</span>'; return; }
-    const per={}; BRANDS.forEach(b=>per[b]=0);
-    const hits=[];
-    ADS.forEach(a=>{ if(a.t.toLowerCase().includes(q)){ per[a.b]++; hits.push(a); } });
-    const yes=BRANDS.filter(b=>per[b]>0), no=BRANDS.filter(b=>per[b]===0);
-    sYes.innerHTML = yes.length
-      ? yes.sort((a,b)=>per[b]/n(b)-per[a]/n(a)).map(b=>
-          `<div class="bline"><span>${b}</span><span class="c">${per[b]}/${n(b)} · ${Math.round(100*per[b]/n(b))}%</span></div>`).join("")
-      : '<div class="bline" style="border:0;color:var(--sig);font-weight:650">Nobody. Completely open.</div>';
-    sNo.innerHTML = no.map(b=>`<div class="bline"><span>${b}</span><span class="c">0</span></div>`).join("")
-      || '<div class="bline" style="border:0">Every brand says it.</div>';
-    sHits.innerHTML = hits.slice(0,40).map(a=>{
-      const i=a.t.toLowerCase().indexOf(q);
-      const txt=esc(a.t.slice(0,i))+"<b>"+esc(a.t.slice(i,i+q.length))+"</b>"+esc(a.t.slice(i+q.length));
-      return `<div class="shit"><span class="who">${a.b}</span>${txt}</div>`;
-    }).join("") || '<div class="shit" style="border-left-color:var(--grey)">No ad in the set contains this.</div>';
-    const pctAds=Math.round(100*hits.length/ADS.length);
-    sVer.innerHTML = hits.length
-      ? `<em>${hits.length}</em> of 101 ads (${pctAds}%) &middot; <em>${yes.length}</em> of 12 brands say it &middot; <em>${no.length}</em> do not.`
-      : `<em>Nothing in 101 ads.</em> No brand in this category is saying it.`;
+    if(!q){
+      heads("Brands saying it","Brands not saying it — the whitespace","The actual ads");
+      sYes.innerHTML=sNo.innerHTML=sHits.innerHTML="";
+      sVer.innerHTML='<span style="color:var(--grey);font-weight:400">'+
+        'Type a word or phrase. Named themes answer with the audited numbers.</span>';
+      return;
+    }
+    const hits=ADS.filter(a=>a.t.toLowerCase().includes(q));
+    const theme=themeOf(q);
+
+    if(theme){                                   /* -------- theme mode -------- */
+      const tagged=ADS.filter(a=>a.th.includes(theme));
+      const per={}; tagged.forEach(a=>{per[a.b]=(per[a.b]||0)+1;});
+      const yes=BRANDS.filter(b=>per[b]>0), no=BRANDS.filter(b=>!per[b]);
+      heads("Carrying the theme","Ceding it — the whitespace","The tagged ads — the receipts");
+      sYes.innerHTML = yes.sort((a,b)=>per[b]/n(b)-per[a]/n(a)).map(b=>
+        `<div class="bline"><span>${b}</span><span class="c">${per[b]}/${n(b)} · ${Math.round(100*per[b]/n(b))}%</span></div>`).join("")
+        || '<div class="bline" style="border:0;color:var(--sig);font-weight:650">No brand carries it.</div>';
+      sNo.innerHTML = no.map(b=>`<div class="bline"><span>${b}</span><span class="c">0</span></div>`).join("")
+        || '<div class="bline" style="border:0">Every brand carries it.</div>';
+      sHits.innerHTML = tagged.slice(0,40).map(a=>
+        `<div class="shit"><span class="who">${a.b}</span>${mark(a.t,q)}</div>`).join("");
+      const pct=Math.round(100*tagged.length/ADS.length);
+      sVer.innerHTML=`Audited theme <em>${theme}</em> &middot; <em>${tagged.length}</em> of 101 ads (${pct}%) `+
+        `&middot; <em>${yes.length}</em> of 12 brands carry it, <em>${no.length}</em> cede it. `+
+        `The literal word appears in ${hits.length} ad${hits.length===1?"":"s"} — the tags read the copy, not the keyword.`;
+      return;
+    }
+
+    if(hits.length){                             /* ------- literal mode ------- */
+      const per={}; hits.forEach(a=>{per[a.b]=(per[a.b]||0)+1;});
+      const yes=BRANDS.filter(b=>per[b]>0), no=BRANDS.filter(b=>!per[b]);
+      heads("Brands saying it","Brands not saying it — the whitespace","The actual ads");
+      sYes.innerHTML = yes.sort((a,b)=>per[b]/n(b)-per[a]/n(a)).map(b=>
+        `<div class="bline"><span>${b}</span><span class="c">${per[b]}/${n(b)} · ${Math.round(100*per[b]/n(b))}%</span></div>`).join("");
+      sNo.innerHTML = no.map(b=>`<div class="bline"><span>${b}</span><span class="c">0</span></div>`).join("")
+        || '<div class="bline" style="border:0">Every brand says it.</div>';
+      sHits.innerHTML = hits.slice(0,40).map(a=>
+        `<div class="shit"><span class="who">${a.b}</span>${mark(a.t,q)}</div>`).join("");
+      const pctAds=Math.round(100*hits.length/ADS.length);
+      sVer.innerHTML=`<em>${hits.length}</em> of 101 ads (${pctAds}%) &middot; <em>${yes.length}</em> of 12 brands say it &middot; <em>${no.length}</em> do not.`;
+      return;
+    }
+
+    /* ------- no matches: show the theme map, not a cheap zero ------- */
+    const rows=THEME_LIST.map(t=>{
+      const tagged=ADS.filter(a=>a.th.includes(t));
+      const per={}; tagged.forEach(a=>{per[a.b]=(per[a.b]||0)+1;});
+      const top=Object.entries(per).sort((x,y)=>y[1]-x[1])[0];
+      return {t,count:tagged.length,top};
+    }).sort((x,y)=>y.count-x.count);
+    const crowded=rows.filter(r=>r.count>=30), open=rows.filter(r=>r.count<30);
+    heads("Crowded themes — the wall","Thin themes — the whitespace","Why no verdict from one word");
+    sYes.innerHTML = crowded.map(r=>
+      `<div class="bline"><span>${r.t}</span><span class="c">${r.count}/101 · ${Math.round(100*r.count/101)}%</span></div>`).join("");
+    sNo.innerHTML = open.map(r=>
+      `<div class="bline"><span>${r.t}</span><span class="c">${r.count} ads · ${r.top?r.top[0]+" "+r.top[1]:"—"}</span></div>`).join("");
+    sHits.innerHTML = `<div class="shit" style="border-left-color:var(--grey)">`+
+      `<b>No ad contains &ldquo;${esc(q)}&rdquo;.</b> In a 101-ad set, a missing word is weak `+
+      `evidence by itself — &ldquo;Your First 5K&rdquo; carries belonging without the word `+
+      `community. The audited theme map is the honest read: the thin column is the real whitespace.</div>`;
+    const thin=rows[rows.length-1];
+    sVer.innerHTML=`<em>0</em> literal matches &middot; showing the audited theme map instead. `+
+      `Thinnest territory: <em>${thin.t}</em> at ${thin.count} ads.`;
   }
   qEl.addEventListener("input",runSearch);
-  runSearch();
+  qEl.value="community"; runSearch();            /* land loaded on the finding */
 
   document.getElementById('nx').addEventListener('click',e=>{e.stopPropagation();go(i+1);});
   document.getElementById('pv').addEventListener('click',e=>{e.stopPropagation();go(i-1);});
