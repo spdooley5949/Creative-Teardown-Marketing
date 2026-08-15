@@ -65,7 +65,7 @@ set to 101 ads and showed that **all twelve brands cite proof**.
 Vuori, which we had labelled the worst offender, runs 4.6 from 13,593 reviews and
 a 100% product guarantee.
 
-The corrected finding is stronger than the original: 61% of ads cite nothing,
+The corrected finding is stronger than the original: 67% of ads cite nothing,
 which is a claim about discipline across an entire category rather than three
 brands being careless. But we only reached it by going back.
 
